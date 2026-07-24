@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>京城浮生记 · 住房课题小组附卷</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏙️</text></svg>">
+<style>
+:root{
+  --paper:#f0ece3;--ink:#1f1c19;--ink2:#6e6759;--seal:#b3231f;--kraft:#b49a6e;
+  --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+  --kai:"Kaiti SC","STKaiti","KaiTi",serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none}
+body{background:#17140f;font-family:var(--serif);color:var(--ink)}
+#c3d{position:fixed;inset:0;display:block}
+button{font-family:var(--serif)}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:10}
+#hbar{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;width:min(200px,42vw);pointer-events:none}
+#hbar .lab{font-size:11px;letter-spacing:.25em;color:var(--paper);text-shadow:0 1px 3px rgba(0,0,0,.6);margin-bottom:3px}
+#hbar .track{height:10px;background:rgba(23,20,15,.55);border:1px solid rgba(240,236,227,.5);border-radius:5px;overflow:hidden}
+#hbar .fill{height:100%;width:50%;background:var(--seal);border-radius:4px;transition:width .5s}
+#stamps{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.slot{width:34px;height:34px;border:1.5px dashed rgba(240,236,227,.45);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9.5px;letter-spacing:.05em;color:rgba(240,236,227,.5);text-align:center;line-height:1.15;background:rgba(23,20,15,.3)}
+.slot.got{border:2px solid var(--seal);color:#f5efe4;background:var(--seal);font-weight:900;transform:rotate(-6deg);box-shadow:inset 0 0 0 1.5px #f5efe4}
+#toasts{position:absolute;top:calc(58px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:92vw;max-width:480px}
+.toast{background:rgba(240,236,227,.96);color:var(--ink);border-left:4px solid var(--seal);border-radius:4px;padding:8px 14px;font-size:13px;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.35);animation:tin .3s ease;max-width:100%}
+.toast.good{border-left-color:#3f8f6e}
+@keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* 大印章动画 */
+#bigstamp{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:clamp(30px,9vw,52px);font-weight:900;color:var(--seal);border:4px solid var(--seal);border-radius:8px;padding:.25em .5em;letter-spacing:.2em;text-indent:.2em;opacity:0;pointer-events:none;box-shadow:inset 0 0 0 2px rgba(240,236,227,.9),inset 0 0 0 4px var(--seal);background:rgba(240,236,227,.12)}
+#bigstamp.go{animation:bstamp 1.6s ease forwards}
+@keyframes bstamp{0%{opacity:0;transform:translate(-50%,-50%) rotate(-18deg) scale(2.8)}18%{opacity:1;transform:translate(-50%,-50%) rotate(-7deg) scale(1)}75%{opacity:1;transform:translate(-50%,-50%) rotate(-7deg) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) rotate(-7deg) scale(.9)}}
+
+/* 互动按钮 */
+#act{position:fixed;right:18px;bottom:calc(26px + env(safe-area-inset-bottom));z-index:20;display:none;pointer-events:auto;background:var(--seal);color:#f5efe4;border:none;border-radius:50%;width:84px;height:84px;font-size:15px;font-weight:900;letter-spacing:.1em;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 0 2px #f5efe4,inset 0 0 0 4px var(--seal);line-height:1.3}
+#act:active{transform:scale(.94)}
+
+/* 摇杆 */
+#joyzone{position:fixed;left:0;bottom:0;width:55vw;height:55vh;z-index:15;pointer-events:auto}
+#joybase{position:fixed;width:110px;height:110px;border:2px solid rgba(240,236,227,.5);border-radius:50%;background:rgba(23,20,15,.25);display:none;z-index:16;pointer-events:none}
+#joyknob{position:fixed;width:52px;height:52px;border-radius:50%;background:rgba(240,236,227,.85);display:none;z-index:17;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+/* ---------- 对话 ---------- */
+#dlg{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(560px,94vw);z-index:30;display:none}
+#dlg .panel{background:var(--paper);border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.55);padding:14px 16px 12px;border:1px solid rgba(31,28,25,.2)}
+#dlg .who{display:inline-block;font-size:12px;font-weight:900;letter-spacing:.2em;color:#f5efe4;background:var(--seal);border-radius:3px;padding:2px 9px;margin-bottom:7px;transform:rotate(-2deg)}
+#dlg .txt{font-size:14.5px;line-height:1.85;min-height:3.6em;font-family:var(--kai)}
+#dlg .nextrow{text-align:right;margin-top:6px}
+#dlg .nextrow button,#dlg .choices button{background:none;border:1.5px solid var(--seal);color:var(--seal);border-radius:4px;padding:7px 16px;font-size:13.5px;font-weight:700;letter-spacing:.08em;pointer-events:auto}
+#dlg .nextrow button:active,#dlg .choices button:active{background:var(--seal);color:#f5efe4}
+#dlg .choices{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#dlg .choices button{text-align:left}
+
+/* ---------- 标题屏 / 结局 ---------- */
+.screen{position:fixed;inset:0;z-index:50;background:#17140f url() ;display:flex;align-items:center;justify-content:center;padding:20px}
+.screen .paper{background:var(--paper);border-radius:4px;max-width:460px;width:100%;max-height:88vh;overflow-y:auto;padding:34px 26px 30px;box-shadow:0 20px 60px rgba(0,0,0,.6);text-align:center;background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(31,28,25,.03) 27px 28px)}
+.screen .eyebrow{font-size:11px;letter-spacing:.4em;color:var(--ink2)}
+.screen h1{font-size:clamp(30px,9vw,44px);font-weight:900;letter-spacing:.15em;margin:10px 0 4px}
+.screen .sub{font-family:var(--kai);font-size:13.5px;color:var(--ink2);line-height:1.9}
+.screen .rules{text-align:left;font-size:13px;color:var(--ink2);margin:18px 0;line-height:2;border-top:1px dashed rgba(31,28,25,.25);border-bottom:1px dashed rgba(31,28,25,.25);padding:12px 4px}
+.screen .rules b{color:var(--seal)}
+.bigbtn{background:var(--seal);color:#f5efe4;border:none;border-radius:5px;padding:13px 34px;font-size:17px;font-weight:900;letter-spacing:.3em;text-indent:.3em;box-shadow:inset 0 0 0 2px #f5efe4,inset 0 0 0 4px var(--seal);margin-top:8px}
+.bigbtn:active{transform:scale(.96)}
+.linkrow{margin-top:14px;font-size:12px}
+.linkrow a{color:var(--ink2);letter-spacing:.1em}
+#ending{display:none}
+#ending .verdict{text-align:left;font-size:14px;line-height:2;margin:14px 0;text-align:justify}
+#ending .verdict .hl{color:var(--seal);font-weight:700}
+#ending .stamp-final{display:inline-block;font-weight:900;color:var(--seal);border:3px solid var(--seal);border-radius:6px;padding:.25em .5em;letter-spacing:.25em;text-indent:.25em;transform:rotate(-7deg);font-size:clamp(20px,6vw,28px);box-shadow:inset 0 0 0 1.5px var(--paper),inset 0 0 0 2.5px var(--seal);margin:12px 0}
+#ending .title-earn{font-family:var(--kai);font-size:15px;margin-top:6px}
+#fallback{display:none;position:fixed;inset:0;z-index:99;background:#17140f;color:var(--paper);align-items:center;justify-content:center;text-align:center;padding:30px;font-size:14px;line-height:2}
+@media(prefers-reduced-motion:reduce){#bigstamp.go{animation-duration:.01s}}
+</style>
+</head>
+<body>
+<canvas id="c3d"></canvas>
+
+<div id="hud">
+  <div id="hbar"><div class="lab">幸 福 感</div><div class="track"><div class="fill" id="hfill"></div></div></div>
+  <div id="stamps"></div>
+  <div id="toasts"></div>
+  <div id="bigstamp"></div>
+</div>
+
+<button id="act">对话</button>
+<div id="joyzone"></div><div id="joybase"></div><div id="joyknob"></div>
+
+<div id="dlg"><div class="panel">
+  <span class="who" id="dwho"></span>
+  <div class="txt" id="dtxt"></div>
+  <div class="choices" id="dchoices" style="display:none"></div>
+  <div class="nextrow" id="dnextrow"><button id="dnext">继续 ▸</button></div>
+</div></div>
+
+<div class="screen" id="title">
+  <div class="paper">
+    <div class="eyebrow">住房课题小组 · 专案卷宗 · 附卷</div>
+    <h1>京城浮生记</h1>
+    <div class="sub">一份调研问卷引发的惨案 · 3D 互动版<br>你饰演一名刚出“住盒”的普通牛马</div>
+    <div class="rules">
+      <b>◉ 目标</b>：找到散落京城的 7 位组员，完成他们的委托，集齐 <b>七枚印章</b>，回到组长处结案。<br>
+      <b>◉ 操作</b>：手机——左侧摇杆移动，靠近人物点“对话”；电脑——WASD / 方向键移动，E 键对话。<br>
+      <b>◉ 提示</b>：红色光柱是当前目标。城市本身会持续扣你的幸福感，这不是 bug，这是北京。
+    </div>
+    <button class="bigbtn" id="startBtn">开 始 服 刑</button>
+    <div class="linkrow"><a href="../">← 回专案卷宗</a></div>
+  </div>
+</div>
+
+<div class="screen" id="ending">
+  <div class="paper">
+    <div class="eyebrow">（2026）京房课密字第 0724 号 · 附卷</div>
+    <h1 style="font-size:clamp(24px,7vw,34px)">结 案 陈 词</h1>
+    <div class="verdict">
+      经查：你已集齐七枚印章，走完了这座城市为你准备的全部刑期体验。本案定性：<span class="hl">群体性苦中作乐事件</span>。判决如下：全员继续在京服刑，缓期执行；准予以“周末京郊团建”方式保外就医。下一议题：东灵山（无需报备）／大同火山群（待出京审批）。
+    </div>
+    <div id="finalScore" class="title-earn"></div>
+    <div><span class="stamp-final">永 不 结 案</span></div>
+    <button class="bigbtn" onclick="location.reload()">再 服 一 次</button>
+    <div class="linkrow"><a href="../">← 回专案卷宗</a></div>
+  </div>
+</div>
+
+<div id="fallback"><div>你的浏览器不支持 3D（WebGL）。<br>请换个浏览器打开，或回去看<a href="../" style="color:#b49a6e">《专案卷宗》</a>。</div></div>
+
+<script src="three.min.js"></script>
+<script>
+(function(){
+'use strict';
+/* ================= 基础 ================= */
+var canvas=document.getElementById('c3d');
+var renderer;
+try{
+  renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});
+}catch(e){document.getElementById('fallback').style.display='flex';return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.setSize(window.innerWidth,window.innerHeight);
+var scene=new THREE.Scene();
+scene.background=new THREE.Color(0xd8d2c4);
+scene.fog=new THREE.Fog(0xd8d2c4,70,230);
+var camera=new THREE.PerspectiveCamera(55,window.innerWidth/window.innerHeight,.1,500);
+scene.add(new THREE.HemisphereLight(0xf5efe0,0x8a8474,1.05));
+var sun=new THREE.DirectionalLight(0xfff4e0,.7);sun.position.set(-40,80,30);scene.add(sun);
+window.addEventListener('resize',function(){
+  camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+/* ================= 造物工具 ================= */
+function mat(c){return new THREE.MeshLambertMaterial({color:c});}
+function box(w,h,d,c,x,y,z,parent){
+  var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));
+  m.position.set(x,y,z);(parent||scene).add(m);return m;
+}
+function label(text,opts){
+  opts=opts||{};
+  var pad=18,fs=40;
+  var cv=document.createElement('canvas');var ctx=cv.getContext('2d');
+  ctx.font='bold '+fs+'px "Songti SC","SimSun",serif';
+  var w=ctx.measureText(text).width;
+  cv.width=Math.ceil(w+pad*2);cv.height=fs+pad*1.4;
+  ctx=cv.getContext('2d');
+  ctx.font='bold '+fs+'px "Songti SC","SimSun",serif';
+  if(!opts.plain){
+    ctx.fillStyle=opts.bg||'rgba(240,236,227,0.92)';
+    var r=12;ctx.beginPath();
+    ctx.moveTo(r,0);ctx.lineTo(cv.width-r,0);ctx.quadraticCurveTo(cv.width,0,cv.width,r);
+    ctx.lineTo(cv.width,cv.height-r);ctx.quadraticCurveTo(cv.width,cv.height,cv.width-r,cv.height);
+    ctx.lineTo(r,cv.height);ctx.quadraticCurveTo(0,cv.height,0,cv.height-r);
+    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.fill();
+  }
+  ctx.fillStyle=opts.color||'#1f1c19';
+  ctx.textBaseline='middle';ctx.fillText(text,pad,cv.height/2+2);
+  var tex=new THREE.CanvasTexture(cv);
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false}));
+  var s=opts.scale||0.05;
+  sp.scale.set(cv.width*s,cv.height*s,1);
+  return sp;
+}
+
+/* ================= 城市 ================= */
+box(176,1,176,0xb7b0a1,0,-0.5,0); /* 地面 */
+box(13,0.12,176,0x5f5b52,0,0.06,0); /* 主路 南北 */
+box(176,0.12,13,0x5f5b52,0,0.06,-2); /* 主路 东西 */
+box(1,0.14,176,0xd8d2c4,0,0.08,0); /* 路中线 */
+box(176,0.14,1,0xd8d2c4,0,0.08,-2);
+
+function building(x,z,w,d,h,c){
+  var b=box(w,h,d,c,x,h/2,z);
+  /* 窗（正面贴片） */
+  var win=new THREE.Mesh(new THREE.PlaneGeometry(w*0.8,h*0.7),
+    new THREE.MeshBasicMaterial({color:0x3e3a35,transparent:true,opacity:0.25}));
+  win.position.set(x,h*0.52,z+d/2+0.05);scene.add(win);
+  return b;
+}
+/* 南：住盒小区（大板楼） */
+building(-30,58,22,8,16,0x9a948a);building(-30,74,22,8,16,0x8f8a80);
+building(30,58,22,8,16,0xa39d92);building(30,74,22,8,18,0x9a948a);
+building(0,90,26,8,14,0x8f8a80);
+box(3,4,3,0x6e6a63,-14,2,64);box(3,5,3,0x6e6a63,14,2.5,68); /* 配电箱般的杂物 */
+/* 北：写字楼群 */
+building(-18,-56,14,14,34,0x8a857b);building(0,-62,16,16,42,0x77726a);
+building(20,-56,14,14,30,0x948e84);building(-38,-64,12,12,24,0x9a948a);
+/* 东北：livehouse 园区（旧厂房，带彩色） */
+building(52,-50,18,12,9,0x6e6a63);
+box(6,7,6,0xb3231f,44,3.5,-44);box(5,5,5,0x3f8f6e,58,2.5,-44);box(4,6,4,0x4a7ab5,58,3,-56);
+/* 西：校门 */
+box(2.4,10,2.4,0x8a2f2b,-56,5,28);box(2.4,10,2.4,0x8a2f2b,-46,5,28);
+box(13,2,3,0x8a2f2b,-51,10.6,28);
+/* 东：宽马路栅栏 */
+for(var i=0;i<14;i++){box(0.4,1.6,2.6,0x707070,24,0.9,8+i*3.2);}
+/* 地铁站入口（中心） */
+building(8,-14,10,8,6,0x9a948a);
+box(7,0.5,7,0x6e6a63,0,3.8,10);
+box(6,3.6,0.6,0xf0ece3,0,1.8,13);
+var msign=box(2.6,2.6,0.7,0xb3231f,0,5.6,10);
+var mlab=label('地铁 · 6号线',{scale:0.016});mlab.position.set(0,7.6,10);scene.add(mlab);
+/* 便利店（北京限定款） */
+building(52,-2,7,6,4,0xc9c2b4);
+var blab=label('便利店(罕见)',{scale:0.015,color:'#b3231f'});blab.position.set(52,5.6,-2);scene.add(blab);
+/* 直梯 */
+building(-52,-20,5,5,7,0xa8a296);
+box(3,4.4,0.4,0x4a4640,-52,2.2,-17.4);
+var elab=label('无障碍直梯(传说)',{scale:0.015,color:'#b3231f'});elab.position.set(-52,8.6,-20);scene.add(elab);
+/* 充电宝桩 */
+box(2,3,2,0x3f6e5a,12,1.5,-38);
+var clab=label('某品牌充电宝',{scale:0.014});clab.position.set(12,4.4,-38);scene.add(clab);
+/* 大同火山海报牌（北缘彩蛋） */
+box(10,6,0.6,0xf0ece3,0,5,-84);box(0.6,4,0.6,0x6e6a63,-4,2,-84);box(0.6,4,0.6,0x6e6a63,4,2,-84);
+var plab=label('今夏·大同火山群(出京审批中)',{scale:0.015,color:'#b3231f'});plab.position.set(0,9.6,-84);scene.add(plab);
+/* 树 */
+function tree(x,z){
+  box(0.7,2.4,0.7,0x7a6a52,x,1.2,z);
+  var top=new THREE.Mesh(new THREE.ConeGeometry(1.9,4,6),mat(0x7d8468));
+  top.position.set(x,4.4,z);scene.add(top);
+}
+[[-14,40],[14,40],[-40,20],[40,44],[-24,-30],[36,-24],[-44,-42],[16,26],[-10,-24],[44,18],[-36,48],[60,26]].forEach(function(p){tree(p[0],p[1]);});
+/* 云 */
+var clouds=[];
+[[-40,42,-60],[30,46,20],[60,40,-30],[-60,44,50]].forEach(function(p){
+  var c=box(14,2,7,0xffffff,p[0],p[1],p[2]);c.material.transparent=true;c.material.opacity=0.8;clouds.push(c);
+});
+
+/* ================= 角色工厂 ================= */
+function makePerson(accent,opts){
+  opts=opts||{};
+  var g=new THREE.Group();
+  var body=box(1.5,1.9,0.9,opts.bodyColor||0x35322e,0,1.85,0,g);
+  box(1.6,0.55,1,accent,0,2.9,0,g); /* 围巾/领子 */
+  var head=new THREE.Mesh(new THREE.SphereGeometry(0.85,10,10),mat(0xe8cdb0));
+  head.position.set(0,3.9,0);g.add(head);
+  box(1.5,0.55,1.5,0x2b2825,0,4.45,0,g); /* 头发 */
+  var la=box(0.42,1.5,0.42,opts.bodyColor||0x35322e,-1.05,2.0,0,g);
+  var ra=box(0.42,1.5,0.42,opts.bodyColor||0x35322e,1.05,2.0,0,g);
+  var ll=box(0.5,1.1,0.5,0x26241f,-0.42,0.55,0,g);
+  var rl=box(0.5,1.1,0.5,0x26241f,0.42,0.55,0,g);
+  la.geometry.translate(0,-0.55,0);la.position.y=2.6;
+  ra.geometry.translate(0,-0.55,0);ra.position.y=2.6;
+  ll.geometry.translate(0,-0.5,0);ll.position.y=1.1;
+  rl.geometry.translate(0,-0.5,0);rl.position.y=1.1;
+  g.userData.limbs={la:la,ra:ra,ll:ll,rl:rl};
+  scene.add(g);
+  return g;
+}
+
+/* 玩家 */
+var player=makePerson(0xb3231f);
+player.position.set(0,0,62);
+var pTag=label('你（牛马）',{scale:0.014});pTag.position.y=5.6;player.add(pTag);
+
+/* ================= NPC ================= */
+var NPCS={};
+function npc(key,name,accent,x,z,face){
+  var g=makePerson(accent,{bodyColor:0x4a463f});
+  g.position.set(x,0,z);g.rotation.y=face||0;
+  var t=label(name,{scale:0.016});t.position.y=5.7;g.add(t);
+  var ex=label('！',{scale:0.028,color:'#b3231f',bg:'rgba(240,236,227,0.95)'});
+  ex.position.y=7.1;g.add(ex);
+  NPCS[key]={key:key,name:name,g:g,ex:ex,x:x,z:z};
+  return NPCS[key];
+}
+npc('yh','游鸿·组长',0x8a2f2b, 5,58, Math.PI);
+npc('sxx','孙欲晓',0xd9a441, 7,16, Math.PI*0.8);
+npc('csj','陈思伽',0x7a68a8, 33,26, -Math.PI/2);
+npc('yhy','杨红叶',0xbf4a26, -14,4, Math.PI/2);
+npc('hr','黄睿',0x4a7ab5, -6,-44, 0);
+npc('wc','魏琛',0x3f8f6e, 48,-42, 0);
+npc('zz','赵昭',0x6aa4a0, -12,56, Math.PI);
+npc('cyl','陈宇琳·清华',0x7c5c8f, -49,33, Math.PI/2);
+npc('ghb','高宏博',0xc2b280, -50,-73, 0.6);
+/* 便利店老板算半个可互动物 */
+var boothPoint={key:'booth',name:'便利店',x:52,z:2.6};
+
+/* ================= 状态 ================= */
+var S={
+  started:false,dialog:false,ended:false,
+  hp:50,
+  q:{yh:0,sxx:0,csj:0,yhy:0,hr:0,wc:0,zz:0,cyl:0,ghb:0},
+  stamps:{}, stampCount:0,
+  hintGiven:false
+};
+var STAMPS=[
+  {k:'wj',n:'问卷'},{k:'cdb',n:'充电宝'},{k:'bs',n:'补水'},{k:'wza',n:'无障碍'},
+  {k:'lq',n:'冷枪'},{k:'hs',n:'还伞'},{k:'jl',n:'锦鲤'}
+];
+var stampsEl=document.getElementById('stamps');
+STAMPS.forEach(function(s){
+  var d=document.createElement('div');d.className='slot';d.id='slot-'+s.k;d.textContent=s.n;
+  stampsEl.appendChild(d);
+});
+function earnStamp(k){
+  if(S.stamps[k])return;
+  S.stamps[k]=true;S.stampCount++;
+  var def=STAMPS.filter(function(s){return s.k===k;})[0];
+  var slot=document.getElementById('slot-'+k);slot.classList.add('got');slot.textContent=def.n;
+  var big=document.getElementById('bigstamp');
+  big.textContent=def.n+'章';big.classList.remove('go');void big.offsetWidth;big.classList.add('go');
+  toast('获得印章【'+def.n+'】（'+S.stampCount+'/7）','good');
+  if(S.stampCount>=5&&!S.stamps.jl&&!S.hintGiven){
+    S.hintGiven=true;
+    setTimeout(function(){toast('风声：还有一位组员填完问卷就潜水了……据说藏在城市西北的高楼后面。');},2200);
+  }
+}
+function toast(msg,cls){
+  var t=document.createElement('div');t.className='toast'+(cls?' '+cls:'');t.innerHTML=msg;
+  var wrap=document.getElementById('toasts');wrap.appendChild(t);
+  while(wrap.children.length>3)wrap.removeChild(wrap.firstChild);
+  setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},3800);
+}
+function addHp(d,reason){
+  S.hp=Math.max(0,Math.min(100,S.hp+d));
+  document.getElementById('hfill').style.width=S.hp+'%';
+  if(reason)toast(reason+'　<b style="color:'+(d>=0?'#3f8f6e':'#b3231f')+'">幸福感 '+(d>=0?'+':'')+d+'</b>',d>=0?'good':'');
+  if(S.hp<=0&&d<0)setTimeout(function(){toast('幸福感归零。但你已经麻了，明天还得上班，游戏继续。');},1200);
+}
+document.getElementById('hfill').style.width=S.hp+'%';
+
+/* ================= 光柱目标 ================= */
+var beacons={};
+function setBeacon(key,x,z,text){
+  clearBeacon(key);
+  var g=new THREE.Group();
+  var cyl=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,16,10,1,true),
+    new THREE.MeshBasicMaterial({color:0xb3231f,transparent:true,opacity:0.4,side:THREE.DoubleSide}));
+  cyl.position.y=8;g.add(cyl);
+  var cone=new THREE.Mesh(new THREE.ConeGeometry(1.1,2,4),new THREE.MeshBasicMaterial({color:0xb3231f}));
+  cone.rotation.x=Math.PI;cone.position.y=4.6;g.add(cone);
+  if(text){var tl=label(text,{scale:0.016,color:'#b3231f'});tl.position.y=17.5;g.add(tl);}
+  g.position.set(x,0,z);scene.add(g);
+  beacons[key]={g:g,cone:cone,x:x,z:z};
+}
+function clearBeacon(key){
+  if(beacons[key]){scene.remove(beacons[key].g);delete beacons[key];}
+}
+
+/* ================= 对话引擎 ================= */
+var dlgEl=document.getElementById('dlg'),dwho=document.getElementById('dwho'),
+    dtxt=document.getElementById('dtxt'),dch=document.getElementById('dchoices'),
+    dnr=document.getElementById('dnextrow'),dnext=document.getElementById('dnext');
+var dQueue=[],dEnd=null;
+function say(nodes,onEnd){
+  dQueue=nodes.slice();dEnd=onEnd||null;S.dialog=true;
+  dlgEl.style.display='block';
+  stepDlg();
+}
+function stepDlg(){
+  if(!dQueue.length){closeDlg();return;}
+  var n=dQueue.shift();
+  dwho.textContent=n.who;dtxt.innerHTML=n.text;
+  if(n.choices){
+    dnr.style.display='none';dch.style.display='flex';dch.innerHTML='';
+    n.choices.forEach(function(c){
+      var b=document.createElement('button');b.textContent=c.label;
+      b.onclick=function(){
+        dch.style.display='none';dnr.style.display='block';
+        if(c.nodes)dQueue=c.nodes.concat(dQueue);
+        if(c.cb)c.cb();
+        stepDlg();
+      };
+      dch.appendChild(b);
+    });
+  }else{
+    dnr.style.display='block';dch.style.display='none';
+  }
+}
+dnext.addEventListener('click',stepDlg);
+function closeDlg(){
+  dlgEl.style.display='none';S.dialog=false;
+  var f=dEnd;dEnd=null;
+  if(f)f();
+}
+
+/* ================= 剧情 ================= */
+function interact(key){
+  var q=S.q;
+  if(key==='yh'){
+    if(q.yh===0){
+      say([
+        {who:'游鸿·组长',text:'来了？欢迎来到《京城浮生记》。此地图根据 2026 年 7 月 24 日晚的 564 条聊天记录一比一……胡乱搭建。'},
+        {who:'游鸿·组长',text:'先说正事——问卷填了吗？',choices:[
+          {label:'已填！[旺柴]',nodes:[{who:'游鸿·组长',text:'谢谢！你是个好牛马。'}]},
+          {label:'还没……',nodes:[{who:'游鸿·组长',text:'没关系，宏博四分钟就填完了，你有的是机会（今晚之内）。'}]}
+        ]},
+        {who:'游鸿·组长',text:'组员们散落在城里，每人都有点事需要你。集齐<b style="color:#b3231f">七枚印章</b>回来找我结案。红色光柱是目标，去吧！'}
+      ],function(){
+        q.yh=1;earnStamp('wj');
+        setBeacon('sxx',NPCS.sxx.x,NPCS.sxx.z,'孙欲晓');
+      });
+    }else if(S.stampCount>=7){
+      say([
+        {who:'游鸿·组长',text:'七枚印章齐了。你已阅遍此城的刑期与人情——可以结案了。'},
+        {who:'游鸿·组长',text:'最后送你一句：对自己的后半生，充满了信心。对能活到后半生，没什么信心。'}
+      ],function(){showEnding();});
+    }else{
+      var msg=S.stampCount<5?
+        '还差 '+(7-S.stampCount)+' 枚章。跟着红色光柱走，别的别问，问就是在加班。':
+        '还差 '+(7-S.stampCount)+' 枚章。提示：有位同志填完问卷就潜水了，在城市西北角的楼后面猫着。';
+      say([{who:'游鸿·组长',text:msg}]);
+    }
+  }
+  else if(key==='sxx'){
+    if(q.sxx===0){
+      say([
+        {who:'孙欲晓',text:'你来得正好！我这个充电宝还不上了——这个出站口死活找不到同品牌的桩[捂脸][捂脸][捂脸]'},
+        {who:'孙欲晓',text:'上次我就是这样，最后花 99 元买下了一个充电宝[玫瑰]。这次怎么办？',choices:[
+          {label:'陪她去写字楼那边找同品牌的桩',cb:function(){
+            q.sxx=1;setBeacon('cdb',12,-38,'充电宝桩');
+          },nodes:[{who:'孙欲晓',text:'好！讨论住房我唯唯诺诺，讨论地铁我重磅出击——找桩这种事，重磅出击！'}]},
+          {label:'劝她：直接 99 元买断，止损[玫瑰]',cb:function(){
+            q.sxx=2;addHp(-9,'【99 元买断刑】');earnStamp('cdb');
+          },nodes:[{who:'孙欲晓',text:'豪爽！从此这个充电宝就是我的了。规定无情人有情[玫瑰]'}]}
+        ]}
+      ]);
+    }else if(q.sxx===1){
+      say([{who:'孙欲晓',text:'桩在写字楼广场那边（红色光柱），走！'}]);
+    }else{
+      say([{who:'孙欲晓',text:'我最近在研究一个课题：北京越不宜居，养猫率越高。你看你一脸没空遛狗的样子，就很支持我的假设。'}]);
+    }
+  }
+  else if(key==='csj'){
+    if(q.csj===0){
+      say([
+        {who:'陈思伽',text:'我朋友在成都休高温假 8 天，回来还能再休 2 天；2500 元租三室两卫，精装修[破涕为笑]'},
+        {who:'陈思伽',text:'我已经破防很久了。而且这里是 CBD，我渴了，方圆一公里买不到一瓶水。'},
+        {who:'陈思伽',text:'求你了，帮我找瓶水。听说东边有一家真实存在的便利店（北京限定款）。'}
+      ],function(){q.csj=1;setBeacon('bs',boothPoint.x,boothPoint.z,'便利店');});
+    }else if(q.csj===1){
+      say([{who:'陈思伽',text:'便利店在东边（红色光柱）。要是栅栏挡路……那很正常，绕。'}]);
+    }else if(q.csj===2){
+      say([
+        {who:'陈思伽',text:'水！！谢谢！咕咚咕咚——'},
+        {who:'陈思伽',text:'……好吧，北京也不是一无是处。全国最能吃苦的人都在北京，而最有意思的人，都在这个群。'}
+      ],function(){q.csj=3;addHp(8,'【补水成功】她暂时不破防了');earnStamp('bs');});
+    }else{
+      say([{who:'陈思伽',text:'这确定是住房课题小组的群吗？——我现在确定了，是。'}]);
+    }
+  }
+  else if(key==='yhy'){
+    if(q.yhy===0){
+      say([
+        {who:'杨红叶',text:'在此批评三号线无障碍换乘[苦涩][苦涩]。一出门写着“无障碍换乘”，结果上了电梯下电梯，左走右走——'},
+        {who:'杨红叶',text:'上次我在这儿，成功和一个大哥一起迷路了[捂脸]。帮我探个路：传说西北角有一部真正的直梯，你去确认一下它存在。'}
+      ],function(){q.yhy=1;setBeacon('wza',-52,-16,'传说中的直梯');});
+    }else if(q.yhy===1){
+      say([{who:'杨红叶',text:'直梯在西北角（红色光柱）。要是迷路了……欢迎加入我和大哥的行列。'}]);
+    }else{
+      say([{who:'杨红叶',text:'嘘——房檐上有只北红尾鸲。别告诉别人我在观鸟，我怕彻底改变大家对我的印象。'}]);
+    }
+  }
+  else if(key==='hr'){
+    if(q.hr===0){
+      say([
+        {who:'黄睿',text:'哟。周末打算出去玩？'},
+        {who:'黄睿',text:'你不得出京审批报备。',choices:[
+          {label:'……',cb:function(){addHp(-20,'【冷枪命中】幸福感应声而碎');}}
+        ]},
+        {who:'黄睿',text:'别这个表情。送你一句话——养啥的都有，养好自己的成本太高。'},
+        {who:'黄睿',text:'（据现场群众鉴定：升华了。）'}
+      ],function(){q.hr=1;addHp(15,'【升华了】');earnStamp('lq');});
+    }else{
+      say([{who:'黄睿',text:'context 有点长了。'}]);
+    }
+  }
+  else if(key==='wc'){
+    if(q.wc===0){
+      say([
+        {who:'魏琛',text:'我刚去听了一个 livehouse，我只能说我太洋气了。没有座位，一群人站着听，我的脚站抽筋了，手表一直报警说声音过大[捂脸]'},
+        {who:'魏琛',text:'其实我是去调研的。国企闲置园区改造，文化产业业态——你懂的。'},
+        {who:'魏琛',text:'对了，这把伞是赵昭落在我车上的。本来说周一还她，你既然顺路，帮我带过去？她在南边小区。'}
+      ],function(){q.wc=1;toast('获得道具【赵昭的伞】','good');setBeacon('hs',NPCS.zz.x,NPCS.zz.z,'赵昭');});
+    }else if(q.wc===1){
+      say([{who:'魏琛',text:'伞带好了吗？赵昭在南边小区（红色光柱）。'}]);
+    }else{
+      say([{who:'魏琛',text:'广渠门外那站，地铁上盖两层商业，衔接得不错，但经营很凄惨……空间融合了，业态为什么活不下去？这个值得探索。'}]);
+    }
+  }
+  else if(key==='zz'){
+    if(q.wc===1){
+      say([
+        {who:'赵昭',text:'啊'},
+        {who:'赵昭',text:'啊'},
+        {who:'赵昭',text:'啊！我的伞[捂脸][捂脸]谢谢你！'},
+        {who:'赵昭',text:'情报回礼：livehouse 二层消费酒水可以坐。一层都是站着的——站刑。'}
+      ],function(){q.wc=2;q.zz=1;clearBeacon('hs');addHp(5,'【好人好事】');earnStamp('hs');});
+    }else if(q.zz===1){
+      say([{who:'赵昭',text:'这不是原则上吗……实际也是吗……（她还在消化“五年不批”的事，别打扰她。）'}]);
+    }else{
+      say([
+        {who:'赵昭',text:'护照…'},
+        {who:'赵昭',text:'啊'},
+        {who:'赵昭',text:'（她好像受了什么刺激。也许你该先去别处看看。）'}
+      ]);
+    }
+  }
+  else if(key==='cyl'){
+    if(q.cyl===0){
+      say([
+        {who:'陈宇琳·清华',text:'填完地铁问卷，开了个线上会，发现一小时的信息量，比我挂职一年都大[呲牙]'},
+        {who:'陈宇琳·清华',text:'你们这个群，是真正的田野。'}
+      ],function(){q.cyl=1;addHp(10,'【获得学术认证】');});
+    }else{
+      say([{who:'陈宇琳·清华',text:'继续观察中。请保持你们的信息量。'}]);
+    }
+  }
+  else if(key==='ghb'){
+    if(q.ghb===0){
+      say([
+        {who:'高宏博',text:'？！你怎么找到这儿的……'},
+        {who:'高宏博',text:'嘘。我 04:59 填完问卷就下潜了，完美错过后续 562 条，保住了全场唯一的清白之身。'},
+        {who:'高宏博',text:'锦鲤的秘诀就一条：填完，就跑。'}
+      ],function(){q.ghb=1;addHp(20,'【沾到锦鲤气】');earnStamp('jl');});
+    }else{
+      say([{who:'高宏博',text:'潜水快乐。'}]);
+    }
+  }
+  else if(key==='booth'){
+    if(q.csj===1){
+      say([
+        {who:'便利店老板',text:'欢迎光临！对，这家店真实存在。地铁里不让开，我就开在这儿了。'},
+        {who:'便利店老板',text:'矿泉水一瓶，拿好。替我问候那位破防的同志。'}
+      ],function(){q.csj=2;clearBeacon('bs');toast('获得道具【矿泉水】','good');setBeacon('csj2',NPCS.csj.x,NPCS.csj.z,'回到陈思伽处');});
+    }else{
+      say([{who:'便利店老板',text:'本店招牌：在北京居然买得到水。'}]);
+    }
+  }
+}
+
+/* 到达型目标检测 */
+function checkArrive(){
+  if(beacons.cdb){
+    var b=beacons.cdb;
+    if(dist2(player.position.x,player.position.z,b.x,b.z)<25){
+      clearBeacon('cdb');
+      say([
+        {who:'充电宝桩',text:'滴——检测到归还请求。请先下载 App、注册会员、绑定手机号、开通免密支付。'},
+        {who:'孙欲晓',text:'（远程连线）算了算了！我买断还不行吗！！99 元，从此它自由了，我也自由了[凋谢]'}
+      ],function(){S.q.sxx=2;addHp(-9,'【99 元买断刑】');earnStamp('cdb');});
+    }
+  }
+  if(beacons.wza){
+    var b2=beacons.wza;
+    if(dist2(player.position.x,player.position.z,b2.x,b2.z)<25){
+      clearBeacon('wza');
+      say([
+        {who:'系统',text:'你确认了直梯的存在。它真的存在。它没有排队。它甚至是好的。'},
+        {who:'杨红叶',text:'（远程连线）真的假的！！存证存证！下次我扛行李箱就走这条线——等等，它离换乘口多远？……800 米？[苦涩]'}
+      ],function(){S.q.yhy=2;addHp(6,'【无障碍确证】');earnStamp('wza');});
+    }
+  }
+  if(beacons.csj2&&dist2(player.position.x,player.position.z,NPCS.csj.x,NPCS.csj.z)<30){
+    clearBeacon('csj2');
+  }
+}
+function dist2(x1,z1,x2,z2){var dx=x1-x2,dz=z1-z2;return dx*dx+dz*dz;}
+
+/* ================= 氛围区域 ================= */
+var zones=[
+  {x:0,z:62,r:14,msg:'【住，盒。】月租五千五，面积没你家猫的活动范围大。',d:-4,done:false,delay:true},
+  {x:0,z:10,r:15,msg:'【6 号线无网络信号刑】进入虫洞区间，与世界暂时失联。',d:-3,done:false},
+  {x:26,z:22,r:11,msg:'【宽马路结界】对面就是目的地，但栅栏请你绕行 800 米。',d:-3,done:false},
+  {x:0,z:-52,r:16,msg:'【物价错乱区】美式 1 元，馒头 10 元。山东人表示强烈抗议。',d:0,done:false},
+  {x:50,z:-48,r:13,msg:'【洋气浓度超标】一群人站着听歌。快乐是真的，脚抽筋也是。',d:6,done:false},
+  {x:-51,z:30,r:10,msg:'【学术区】空气中飘着挂职一年的信息量。',d:0,done:false},
+  {x:0,z:-78,r:12,msg:'【出京审批冷却中】大同很近，审批很远。剩余刑期：至 2028 年年中。',d:-5,done:false}
+];
+function checkZones(){
+  zones.forEach(function(z){
+    if(z.done)return;
+    if(dist2(player.position.x,player.position.z,z.x,z.z)<z.r*z.r){
+      z.done=true;
+      addHp(z.d,z.msg);
+    }
+  });
+}
+
+/* ================= 输入 ================= */
+var keys={},input={x:0,z:0};
+window.addEventListener('keydown',function(e){
+  keys[e.code]=true;
+  if(e.code==='KeyE'&&!S.dialog&&nearKey)interact(nearKey);
+  if((e.code==='Space'||e.code==='Enter')&&S.dialog){e.preventDefault();stepDlg();}
+});
+window.addEventListener('keyup',function(e){keys[e.code]=false;});
+/* 虚拟摇杆 */
+var joy={active:false,id:null,ox:0,oy:0};
+var joyzone=document.getElementById('joyzone'),
+    joybase=document.getElementById('joybase'),joyknob=document.getElementById('joyknob');
+joyzone.addEventListener('touchstart',function(e){
+  if(S.dialog||!S.started)return;
+  var t=e.changedTouches[0];
+  joy.active=true;joy.id=t.identifier;joy.ox=t.clientX;joy.oy=t.clientY;
+  joybase.style.display='block';joyknob.style.display='block';
+  joybase.style.left=(t.clientX-55)+'px';joybase.style.top=(t.clientY-55)+'px';
+  joyknob.style.left=(t.clientX-26)+'px';joyknob.style.top=(t.clientY-26)+'px';
+  e.preventDefault();
+},{passive:false});
+window.addEventListener('touchmove',function(e){
+  if(!joy.active)return;
+  for(var i=0;i<e.changedTouches.length;i++){
+    var t=e.changedTouches[i];
+    if(t.identifier!==joy.id)continue;
+    var dx=t.clientX-joy.ox,dy=t.clientY-joy.oy;
+    var len=Math.sqrt(dx*dx+dy*dy),max=48;
+    if(len>max){dx=dx/len*max;dy=dy/len*max;len=max;}
+    joyknob.style.left=(joy.ox+dx-26)+'px';joyknob.style.top=(joy.oy+dy-26)+'px';
+    input.x=dx/max;input.z=dy/max;
+    e.preventDefault();
+  }
+},{passive:false});
+window.addEventListener('touchend',function(e){
+  for(var i=0;i<e.changedTouches.length;i++){
+    if(e.changedTouches[i].identifier===joy.id){
+      joy.active=false;input.x=0;input.z=0;
+      joybase.style.display='none';joyknob.style.display='none';
+    }
+  }
+});
+
+/* 互动按钮 */
+var actBtn=document.getElementById('act'),nearKey=null;
+actBtn.addEventListener('click',function(){
+  if(nearKey&&!S.dialog)interact(nearKey);
+});
+
+/* ================= 主循环 ================= */
+var clock=new THREE.Clock();
+var SPEED=13,LIMIT=84;
+function angleLerp(a,b,t){
+  var d=b-a;
+  while(d>Math.PI)d-=Math.PI*2;
+  while(d<-Math.PI)d+=Math.PI*2;
+  return a+d*t;
+}
+function animate(){
+  requestAnimationFrame(animate);
+  var dt=Math.min(clock.getDelta(),0.05);
+  var t=clock.elapsedTime;
+  /* 键盘合成 */
+  var kx=0,kz=0;
+  if(keys.KeyW||keys.ArrowUp)kz-=1;
+  if(keys.KeyS||keys.ArrowDown)kz+=1;
+  if(keys.KeyA||keys.ArrowLeft)kx-=1;
+  if(keys.KeyD||keys.ArrowRight)kx+=1;
+  var ix=joy.active?input.x:kx, iz=joy.active?input.z:kz;
+  var mlen=Math.sqrt(ix*ix+iz*iz);
+  if(mlen>1){ix/=mlen;iz/=mlen;}
+  var moving=mlen>0.1&&S.started&&!S.dialog&&!S.ended;
+  if(moving){
+    player.position.x+=ix*SPEED*dt;
+    player.position.z+=iz*SPEED*dt;
+    player.position.x=Math.max(-LIMIT,Math.min(LIMIT,player.position.x));
+    player.position.z=Math.max(-LIMIT,Math.min(LIMIT,player.position.z));
+    player.rotation.y=angleLerp(player.rotation.y,Math.atan2(ix,iz),0.25);
+    var L=player.userData.limbs,sw=Math.sin(t*11)*0.6;
+    L.la.rotation.x=sw;L.ra.rotation.x=-sw;L.ll.rotation.x=-sw;L.rl.rotation.x=sw;
+    checkZones();checkArrive();
+  }else{
+    var L2=player.userData.limbs;
+    L2.la.rotation.x*=0.8;L2.ra.rotation.x*=0.8;L2.ll.rotation.x*=0.8;L2.rl.rotation.x*=0.8;
+  }
+  /* NPC 呼吸+感叹号 */
+  for(var k in NPCS){
+    var n=NPCS[k];
+    n.g.position.y=Math.sin(t*2+n.x)*0.06;
+    var show=false;
+    if(k==='yh')show=(S.q.yh===0||S.stampCount>=7)&&!S.ended;
+    else if(k==='sxx')show=S.q.sxx===0;
+    else if(k==='csj')show=S.q.csj===0||S.q.csj===2;
+    else if(k==='yhy')show=S.q.yhy===0;
+    else if(k==='hr')show=S.q.hr===0;
+    else if(k==='wc')show=S.q.wc===0;
+    else if(k==='zz')show=S.q.wc===1;
+    else if(k==='cyl')show=S.q.cyl===0;
+    n.ex.visible=show;
+    if(show)n.ex.position.y=7.1+Math.sin(t*4)*0.25;
+  }
+  /* 光柱旋转 */
+  for(var bk in beacons){beacons[bk].g.rotation.y=t;beacons[bk].cone.position.y=4.6+Math.sin(t*3)*0.5;}
+  /* 云 */
+  clouds.forEach(function(c,i){c.position.x+=dt*(1+i*0.3);if(c.position.x>100)c.position.x=-100;});
+  /* 最近可互动 */
+  nearKey=null;var best=42;
+  for(var k2 in NPCS){
+    var d=dist2(player.position.x,player.position.z,NPCS[k2].g.position.x,NPCS[k2].g.position.z);
+    if(d<best){best=d;nearKey=k2;}
+  }
+  var db=dist2(player.position.x,player.position.z,boothPoint.x,boothPoint.z);
+  if(db<best){best=db;nearKey='booth';}
+  if(nearKey&&!S.dialog&&S.started&&!S.ended){
+    actBtn.style.display='block';
+    actBtn.innerHTML='对话<br><span style="font-size:11px;font-weight:400">'+(nearKey==='booth'?boothPoint.name:NPCS[nearKey].name.split('·')[0])+'</span>';
+  }else{
+    actBtn.style.display='none';
+  }
+  /* 相机跟随 */
+  var cx=player.position.x,cz=player.position.z+21,cy=18;
+  camera.position.x+=(cx-camera.position.x)*0.08;
+  camera.position.y+=(cy-camera.position.y)*0.08;
+  camera.position.z+=(cz-camera.position.z)*0.08;
+  camera.lookAt(player.position.x,3,player.position.z);
+  renderer.render(scene,camera);
+}
+camera.position.set(0,18,83);
+animate();
+
+/* ================= 开始 / 结局 ================= */
+document.getElementById('startBtn').addEventListener('click',function(){
+  document.getElementById('title').style.display='none';
+  S.started=true;
+  setBeacon('yh',NPCS.yh.x,NPCS.yh.z,'游鸿·组长');
+  toast('先去找组长游鸿报到（红色光柱）');
+});
+var _origInteract=interact;
+interact=function(key){
+  if(key==='yh')clearBeacon('yh');
+  if(key==='sxx')clearBeacon('sxx');
+  _origInteract(key);
+};
+function showEnding(){
+  S.ended=true;
+  var hp=S.hp,title;
+  if(hp>=80)title='结案称号：【心态过好嫌疑人】——建议纳入重点观察名单。';
+  else if(hp>=50)title='结案称号：【标准牛马】——不好不坏，明天照常通勤。';
+  else title='结案称号：【已麻】——建议即刻保外就医（东灵山方向）。';
+  document.getElementById('finalScore').innerHTML='最终幸福感：<b style="color:#b3231f">'+hp+'</b> / 100<br>'+title;
+  document.getElementById('ending').style.display='flex';
+}
+})();
+</script>
+</body>
+</html>
