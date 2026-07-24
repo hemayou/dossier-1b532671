@@ -7,6 +7,9 @@
 <title>一份调研问卷引发的惨案 · 专案卷宗</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📕</text></svg>">
 <style>
+@font-face{font-family:"ArchiveSong";src:url(fonts/serif-r.woff2) format("woff2");font-weight:100 500;font-display:swap}
+@font-face{font-family:"ArchiveSong";src:url(fonts/serif-b.woff2) format("woff2");font-weight:600 900;font-display:swap}
+@font-face{font-family:"ArchiveKai";src:url(fonts/kai-r.woff2) format("woff2");font-weight:100 900;font-display:swap}
 :root{
   --desk:#17140f;
   --paper:#f0ece3;
@@ -18,8 +21,8 @@
   --seal-dark:#8f1b18;
   --carbon:#2d4a73;
   --kraft:#b49a6e;
-  --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
-  --kai:"Kaiti SC","STKaiti","KaiTi",serif;
+  --serif:"ArchiveSong","Songti SC","STSong","Noto Serif SC","SimSun",serif;
+  --kai:"ArchiveKai","Kaiti SC","STKaiti","KaiTi",serif;
   --sans:-apple-system,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
@@ -609,7 +612,10 @@ footer p{font-family:var(--mono);font-size:10.5px;color:rgba(180,154,110,.55);le
 </main>
 
 <footer>
-  <p style="margin-bottom:18px"><a href="game/" style="display:inline-block;font-family:var(--serif);font-size:14px;font-weight:900;letter-spacing:.2em;color:#e8dcc4;text-decoration:none;border:2px solid var(--kraft);border-radius:5px;padding:10px 22px;background:rgba(180,154,110,.12)">▶ 调阅附卷 · 3D 跑酷《京城服刑记》</a></p>
+  <p style="margin-bottom:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+  <a href="game/" style="display:inline-block;font-family:var(--serif);font-size:14px;font-weight:900;letter-spacing:.15em;color:#e8dcc4;text-decoration:none;border:2px solid var(--kraft);border-radius:5px;padding:10px 18px;background:rgba(180,154,110,.12)">▶ 附卷一 · 3D 巡游《京城浮生记》</a>
+  <a href="run/" style="display:inline-block;font-family:var(--serif);font-size:14px;font-weight:900;letter-spacing:.15em;color:#e8dcc4;text-decoration:none;border:2px solid var(--kraft);border-radius:5px;padding:10px 18px;background:rgba(180,154,110,.12)">▶ 附卷二 · 3D 跑酷《京城服刑记》</a>
+</p>
   <p>本卷宗由组长委托 AI 于案发当晚连夜蒸馏 · 全部统计为真实数据 · 全部梗均取自案发现场<br>
   仅限群内传阅 · 外传者需提交《未经审批因私外传聊天记录问题说明》一份</p>
 </footer>
