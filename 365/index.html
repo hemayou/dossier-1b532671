@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>牛马365 · 住房课题小组附卷</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐂</text></svg>">
+<style>
+@font-face{font-family:"ArchiveSong";src:url(../fonts/serif-r.woff2) format("woff2");font-weight:100 500;font-display:swap}
+@font-face{font-family:"ArchiveSong";src:url(../fonts/serif-b.woff2) format("woff2");font-weight:600 900;font-display:swap}
+@font-face{font-family:"ArchiveKai";src:url(../fonts/kai-r.woff2) format("woff2");font-weight:100 900;font-display:swap}
+:root{
+  --paper:#f0ece3;--paper2:#e8e3d6;--ink:#1f1c19;--ink2:#6e6759;--ink3:#a39c8d;
+  --seal:#b3231f;--seal-dark:#8f1b18;--kraft:#b49a6e;--good:#3f8f6e;
+  --serif:"ArchiveSong","Songti SC","STSong","SimSun",serif;
+  --kai:"ArchiveKai","Kaiti SC","STKaiti","KaiTi",serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none;touch-action:none}
+body{
+  background:#17140f;
+  background-image:radial-gradient(ellipse 130% 70% at 50% -10%,#241f16 0%,#17140f 65%);
+  font-family:var(--serif);color:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+}
+#app{position:relative;width:100%;max-width:430px;height:100%;max-height:900px;display:flex;flex-direction:column;padding:calc(8px + env(safe-area-inset-top)) 14px calc(10px + env(safe-area-inset-bottom))}
+
+/* ============ 顶部：日历 + 数值 ============ */
+#topbar{flex:none}
+#daystrip{
+  background:var(--paper);border-radius:4px;padding:6px 12px 7px;
+  display:flex;align-items:baseline;justify-content:space-between;
+  box-shadow:0 2px 10px rgba(0,0,0,.4);
+  background-image:repeating-linear-gradient(90deg,transparent 0 6px,rgba(31,28,25,.03) 6px 7px);
+}
+#daystrip .d{font-weight:900;font-size:16px;letter-spacing:.05em}
+#daystrip .d b{color:var(--seal);font-family:var(--mono);font-size:19px}
+#daystrip .season{font-family:var(--kai);font-size:12px;color:var(--ink2)}
+#dayprog{height:4px;background:rgba(240,236,227,.18);border-radius:2px;margin-top:6px;overflow:hidden}
+#dayprog i{display:block;height:100%;width:0;background:var(--kraft);border-radius:2px;transition:width .5s}
+#stats{display:flex;gap:8px;margin-top:10px}
+.stat{flex:1;text-align:center;position:relative}
+.stat .dot{
+  position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+  width:8px;height:8px;border-radius:50%;background:#f0ece3;opacity:0;transition:opacity .15s;
+  box-shadow:0 0 6px rgba(240,236,227,.8);
+}
+.stat .dot.big{width:12px;height:12px;top:-10px}
+.stat .dot.show{opacity:1}
+.stat .icon{font-size:17px;line-height:1}
+.stat .track{height:38px;width:12px;margin:5px auto 0;background:rgba(240,236,227,.14);border:1px solid rgba(240,236,227,.35);border-radius:6px;position:relative;overflow:hidden}
+.stat .fill{position:absolute;left:0;right:0;bottom:0;background:var(--kraft);border-radius:5px;transition:height .45s,background .45s}
+.stat.danger .fill{background:var(--seal)}
+.stat .nm{font-size:10px;letter-spacing:.15em;color:rgba(240,236,227,.75);margin-top:4px}
+
+/* ============ 中部：卡区 ============ */
+#cardzone{flex:1;position:relative;margin:14px 0 8px;min-height:0}
+.card{
+  position:absolute;inset:0;margin:auto;
+  max-height:430px;
+  background:var(--paper);border-radius:10px;
+  box-shadow:0 10px 34px rgba(0,0,0,.5);
+  padding:20px 20px 16px;
+  display:flex;flex-direction:column;
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 26px,rgba(31,28,25,.03) 26px 27px),
+    linear-gradient(155deg,rgba(255,255,255,.55) 0%,transparent 45%);
+  will-change:transform;
+}
+.card.under{transform:scale(.94) translateY(10px);filter:brightness(.92);pointer-events:none}
+.card .head{display:flex;align-items:center;gap:11px;flex:none}
+.card .seal{
+  flex:none;width:46px;height:46px;border-radius:5px;background:var(--seal);color:#f5efe4;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:21px;transform:rotate(-4deg);
+  box-shadow:inset 0 0 0 2px #f5efe4,inset 0 0 0 3.5px var(--seal);
+  mix-blend-mode:multiply;
+}
+.card .who{font-weight:900;font-size:16px;letter-spacing:.1em}
+.card .tag{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.1em;margin-top:2px}
+.card .body{
+  flex:1;display:flex;align-items:center;
+  font-family:var(--kai);font-size:16.5px;line-height:1.9;color:var(--ink);
+  text-align:justify;overflow-y:auto;margin-top:10px;
+}
+.card .caps{flex:none;position:relative;height:34px;margin-top:6px}
+.card .cap{
+  position:absolute;top:0;max-width:62%;
+  font-size:13px;font-weight:700;letter-spacing:.05em;color:var(--seal);
+  border:1.5px solid var(--seal);border-radius:4px;padding:5px 10px;
+  opacity:0;line-height:1.4;
+}
+.card .cap.l{left:0}
+.card .cap.r{right:0;text-align:right}
+.card .hint{flex:none;text-align:center;font-size:10px;color:var(--ink3);letter-spacing:.3em;margin-top:8px}
+
+/* ============ 底部 ============ */
+#bottombar{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#badges{display:flex;gap:4px}
+.bd{
+  width:22px;height:22px;border-radius:3px;border:1.5px dashed rgba(240,236,227,.35);
+  color:rgba(240,236,227,.4);font-size:11px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+}
+.bd.got{background:var(--seal);border:1.5px solid var(--seal);color:#f5efe4;transform:rotate(-5deg)}
+#bottombar .btns{display:flex;gap:8px}
+#bottombar button{
+  background:rgba(180,154,110,.12);border:1px solid rgba(180,154,110,.4);color:#e8dcc4;
+  border-radius:4px;padding:6px 13px;font-size:12px;letter-spacing:.15em;font-family:var(--serif);
+}
+#bottombar button:active{background:rgba(180,154,110,.3)}
+
+/* ============ 屏幕层 ============ */
+.screen{position:fixed;inset:0;z-index:50;background:rgba(23,20,15,.94);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.screen .paper{
+  background:var(--paper);border-radius:5px;max-width:430px;width:100%;max-height:92vh;overflow-y:auto;
+  padding:32px 24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.65);text-align:center;
+  background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(31,28,25,.03) 27px 28px);
+}
+.screen .eyebrow{font-size:11px;letter-spacing:.4em;color:var(--ink2)}
+.screen h1{font-size:clamp(30px,9vw,42px);font-weight:900;letter-spacing:.12em;margin:10px 0 4px}
+.screen .sub{font-family:var(--kai);font-size:13.5px;color:var(--ink2);line-height:1.9}
+.screen .rules{text-align:left;font-size:13px;color:var(--ink2);margin:16px 0;line-height:2;border-top:1px dashed rgba(31,28,25,.25);border-bottom:1px dashed rgba(31,28,25,.25);padding:12px 4px}
+.screen .rules b{color:var(--seal)}
+.bigbtn{
+  background:var(--seal);color:#f5efe4;border:none;border-radius:5px;padding:13px 32px;
+  font-size:16px;font-weight:900;letter-spacing:.3em;text-indent:.3em;font-family:var(--serif);
+  box-shadow:inset 0 0 0 2px #f5efe4,inset 0 0 0 4px var(--seal);margin-top:8px;
+}
+.bigbtn:active{transform:scale(.96)}
+.linkrow{margin-top:13px;font-size:12px}
+.linkrow a,.linkrow button{color:var(--ink2);letter-spacing:.1em;background:none;border:none;font-family:var(--serif);font-size:12px;text-decoration:underline}
+
+/* 结局 */
+#endscreen{display:none}
+.endstamp{
+  display:inline-block;font-weight:900;color:var(--seal);border:3px solid var(--seal);border-radius:7px;
+  padding:.28em .5em;letter-spacing:.2em;text-indent:.2em;transform:rotate(-6deg);
+  font-size:clamp(22px,6.5vw,30px);
+  box-shadow:inset 0 0 0 1.5px var(--paper),inset 0 0 0 2.5px var(--seal);
+  margin:14px 0 8px;opacity:0;
+}
+#endscreen.show .endstamp{animation:estamp .5s cubic-bezier(.2,1.6,.4,1) .3s forwards}
+@keyframes estamp{0%{opacity:0;transform:rotate(-15deg) scale(2.4)}70%{opacity:1;transform:rotate(-5deg) scale(.95)}100%{opacity:1;transform:rotate(-6deg) scale(1)}}
+#endscreen .desc{font-family:var(--kai);font-size:14.5px;line-height:2;color:var(--ink);text-align:justify;margin:10px 0}
+#endscreen .stats-final{font-family:var(--mono);font-size:12px;color:var(--ink2);letter-spacing:.05em;margin:8px 0}
+#endscreen .collect{font-size:12px;color:var(--ink2);letter-spacing:.1em;margin-top:6px}
+#endscreen .share{font-family:var(--kai);font-size:12.5px;color:var(--seal);margin-top:10px}
+
+/* 图鉴 */
+#dex{display:none}
+#dexgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:16px 0}
+.dexcell{border:1.5px dashed rgba(31,28,25,.3);border-radius:5px;padding:10px 6px;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.dexcell .t{font-size:12px;font-weight:900;letter-spacing:.05em}
+.dexcell.lock .t{color:var(--ink3)}
+.dexcell.open{border:2px solid var(--seal)}
+.dexcell.open .t{color:var(--seal)}
+.dexcell .k{font-size:9.5px;color:var(--ink3);letter-spacing:.1em}
+
+@media(prefers-reduced-motion:reduce){
+  .card{transition:none!important}
+  #endscreen.show .endstamp{animation-duration:.01s;animation-delay:0s}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div id="daystrip">
+      <span class="d">第 <b id="dayN">1</b> / 365 天</span>
+      <span class="season" id="seasonTx">一月 · 供暖季</span>
+    </div>
+    <div id="dayprog"><i id="dayfill"></i></div>
+    <div id="stats">
+      <div class="stat" data-k="h"><span class="dot"></span><div class="icon">😊</div><div class="track"><i class="fill"></i></div><div class="nm">幸福</div></div>
+      <div class="stat" data-k="m"><span class="dot"></span><div class="icon">💰</div><div class="track"><i class="fill"></i></div><div class="nm">存款</div></div>
+      <div class="stat" data-k="e"><span class="dot"></span><div class="icon">💪</div><div class="track"><i class="fill"></i></div><div class="nm">体力</div></div>
+      <div class="stat" data-k="b"><span class="dot"></span><div class="icon">👔</div><div class="track"><i class="fill"></i></div><div class="nm">好感</div></div>
+    </div>
+  </div>
+
+  <div id="cardzone"></div>
+
+  <div id="bottombar">
+    <div id="badges"></div>
+    <div class="btns">
+      <button id="dexBtn">图 鉴</button>
+    </div>
+  </div>
+</div>
+
+<!-- 标题屏 -->
+<div class="screen" id="title">
+  <div class="paper">
+    <div class="eyebrow">住房课题小组 · 专案卷宗 · 附卷三</div>
+    <h1>牛马 365</h1>
+    <div class="sub">滑卡生存 · 你能在这座城市撑过一年吗</div>
+    <div class="rules">
+      <b>◉ 玩法</b>：左右拖动卡片二选一（电脑用 ←/→ 键）。拖动时数值上方的 <b>●</b> 提示这个选择会动哪几项——幅度未知，自己掂量。<br>
+      <b>◉ 生死</b>：😊幸福 💰存款 💪体力 👔领导好感，任何一项<b>归零或爆表</b>都会立刻迎来一种结局。是的，爆表也会。<br>
+      <b>◉ 目标</b>：撑满 365 天。途中攒下组员的<b>好感章</b>，集齐七枚，年终有大事发生。<br>
+      <b>◉ 图鉴</b>：每种结局自动收录进《服刑记录簿》，欢迎截图发群里攀比死法。
+    </div>
+    <button class="bigbtn" id="startBtn">入 职</button>
+    <div class="linkrow"><a href="../">← 回专案卷宗</a></div>
+  </div>
+</div>
+
+<!-- 结局屏 -->
+<div class="screen" id="endscreen">
+  <div class="paper">
+    <div class="eyebrow">京房课密字第 0724 号 · 服刑终止通知</div>
+    <div><span class="endstamp" id="endTitle"></span></div>
+    <div class="desc" id="endDesc"></div>
+    <div class="stats-final" id="endStats"></div>
+    <div class="collect" id="endCollect"></div>
+    <div class="share">↑ 截图发群里，比比谁的死法体面</div>
+    <button class="bigbtn" id="againBtn">再 服 一 世</button>
+    <div class="linkrow"><button id="dexBtn2">翻阅《服刑记录簿》</button> · <a href="../">回卷宗</a></div>
+  </div>
+</div>
+
+<!-- 图鉴屏 -->
+<div class="screen" id="dex">
+  <div class="paper">
+    <div class="eyebrow">结局收集</div>
+    <h1 style="font-size:clamp(22px,6vw,30px)">服刑记录簿</h1>
+    <div class="sub" id="dexCount"></div>
+    <div id="dexgrid"></div>
+    <button class="bigbtn" id="dexClose">合 上</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ================================================================
+   结局定义
+================================================================ */
+var ENDINGS = {
+  h0:  {t:'已　麻', k:'幸福归零', d:'你对一切失去了反应。某个清晨，你没有挤上 4 号线，而是坐上了反方向的车，一路到了终点站，然后买了去大理的票。群里最后一条消息是你发的[凋谢]。'},
+  h100:{t:'快乐到可疑', k:'幸福爆表', d:'你在工位连续微笑三天。第四天，领导把你叫进办公室，轻声问：“说说吧，是不是拿到 offer 了？”你百口莫辩，被列入重点观察名单。'},
+  m0:  {t:'含泪退租', k:'存款归零', d:'月租五千五的“温馨一居”被房东收回了。你把行李寄存在孙欲晓那儿，把心留在了六环外，回了老家。房东说这叫“急售笋盘”。'},
+  m100:{t:'被约谈的富翁', k:'存款爆表', d:'全院都在传你炒币暴富。某天下午，两位同志请你“就资金来源做一个说明”。你写了八版，每版都要提到李颖。'},
+  e0:  {t:'四号线电刑·满级', k:'体力归零', d:'早高峰，你倒在了换乘通道。人流平稳地把你抬出了站，全程双脚未落地——这是这座城市最后的温柔。'},
+  e100:{t:'被发现你很闲', k:'体力爆表', d:'你健步如飞、面色红润、眼里有光。领导当即断定你工作量不饱和，一次性给你加了三个专项。眼里的光，卒。'},
+  b0:  {t:'穿小鞋编制', k:'好感归零', d:'你被调往保密专区，负责签字页的装订与骑缝章的比对。从此每天与徐帅热聊，然后被冷暴力。'},
+  b100:{t:'提拔之刑', k:'好感爆表', d:'恭喜你升任副科长。从此，会议室抢三次没抢到的会由你来抢，需求改八版回到第一版的锅由你来背。你怀念当牛马的日子。'},
+  chujing:{t:'聚众出京', k:'特殊死法', d:'同一个周末申请出京的名单里，有你，还有整个课题小组。从最后一次未报备算起——五年。赵昭在走廊里发出了三声“啊”。'},
+  drone:{t:'黑　飞', k:'特殊死法', d:'你在五环内起飞了无人机，只为拍一张宽马路的俯视图。三分钟后你落地了，无人机没有。你体验了真刑。'},
+  yeast:{t:'酵母失养', k:'特殊死法', d:'你连酵母都养死了。消息传到群里，众人沉默良久，杨红叶发来一个[凋谢]，孙欲晓说：“不是一家人，不进一个群。”你羞愧离京。'},
+  win_ok:{t:'缓刑一年', k:'通关', d:'你撑过了 365 天。不好不坏，不上不下，像极了大多数人的一年。判决：缓刑，明年一月一日重新入监。'},
+  win_good:{t:'模范牛马', k:'通关·优', d:'你不仅撑过了 365 天，还活得有模有样：有存款，有力气，居然还有点快乐。全院通报表扬，奖励呛面馒头一个（价值十元）。'},
+  win_true:{t:'永不结案', k:'隐藏真结局', d:'年终，群里弹出一条消息：“周末，东灵山，有牛马（比我们强百倍的），不用报备。”七枚好感章在你手里发烫。你们真的去了——没有鸟，有山，有朋友，有不用写说明的一天。住房课题小组，永不结案。'}
+};
+var DEX_ORDER = ['h0','h100','m0','m100','e0','e100','b0','b100','chujing','drone','yeast','win_ok','win_good','win_true'];
+
+/* ================================================================
+   卡池
+   fx: {h,m,e,b}  set:[flags]  next:'id'  days:N  once  chain  cond:{flag,noflag,dmin,dmax,p}
+================================================================ */
+var C = [];
+function card(o){C.push(o);}
+
+/* ---------- 通用池 ---------- */
+card({id:'c6line',who:'6 号线',seal:'刑',text:'褡裢坡到青年路，北京虫洞。信号消失的四分钟里，你与世界彻底失联，只能面对自己的人生。',
+  L:{cap:'闭眼假寐',fx:{e:8,h:-3}},R:{cap:'思考人生',fx:{h:-7,e:3}}});
+card({id:'cwater',who:'CBD',seal:'渴',text:'开会开到口干舌燥。方圆一公里，你找不到一家便利店。马路对面好像有一家，中间隔着栅栏。',
+  L:{cap:'绕行 800 米去买',fx:{e:-9,h:5,m:-2}},R:{cap:'忍着，回去喝工位凉白开',fx:{h:-6}}});
+card({id:'cprice',who:'食堂',seal:'价',text:'新定价公示：美式一块钱一杯，馒头十块钱一个。山东同事当场破防：“馒头不许涨价！”',
+  L:{cap:'喝三杯美式回血',fx:{e:10,h:3,m:-1}},R:{cap:'声援馒头，拒绝消费',fx:{h:4,m:2,b:-3}}});
+card({id:'cout',who:'外卖',seal:'食',text:'骑手在楼下喊“放门口了”。三十八块的轻食沙拉，菜叶子比你的工资条还薄。',
+  L:{cap:'吃，健康要紧',fx:{m:-8,e:5}},R:{cap:'退了，点十五块的盖饭',fx:{m:-3,h:-3,e:3}}});
+card({id:'cmeet',who:'领导',seal:'会',text:'17:50，领导拉了一个会，主题是《关于减少开会的通知》的讨论会。预计时长：未知。',
+  L:{cap:'积极发言',fx:{b:9,e:-8,h:-5}},R:{cap:'带电脑去“记录”',fx:{b:-4,e:-3,h:2}}});
+card({id:'cver8',who:'需求',seal:'改',text:'需求改到第八版，又回到了第一版。对方在邮件里写：“还是最初的方案有灵性。”',
+  L:{cap:'微笑执行',fx:{b:7,h:-9}},R:{cap:'把八版都发给他看',fx:{b:-9,h:9}}});
+card({id:'cyao',who:'摇号',seal:'摇',text:'本期摇号结果公布。你的中签概率约等于在 6 号线里连上两格信号。',
+  L:{cap:'再摇一期',fx:{h:-4}},R:{cap:'看开了，电动车挺好',fx:{h:3,m:2}}});
+card({id:'cbike',who:'共享单车',seal:'骑',text:'最后一公里，你扫了辆共享单车。到站发现停车区画在了 200 米开外的栅栏另一侧。',
+  L:{cap:'骑过去规范停放',fx:{e:-6,m:1}},R:{cap:'就近停，赌不被拍',fx:{m:-5,h:-2}}});
+card({id:'cweekend',who:'周末',seal:'休',text:'难得的周六。第一天用来睡觉，第二天用来打扫、洗衣、处理工作日没法办的事。这就是传说中的“休息”。',
+  L:{cap:'认命干活',fx:{e:-5,h:-3,m:2}},R:{cap:'摆烂躺平一整天',fx:{e:12,h:5,m:-3}}});
+card({id:'cblack',who:'衣橱',seal:'囚',text:'你站在商场里，手里拿着一件亮黄色外套。试衣镜里的你穿着它，像一个游客。',
+  L:{cap:'买！我还有审美',fx:{m:-7,h:9}},R:{cap:'放下，拿起黑色冲锋衣',fx:{m:-4,h:-4,e:2}}});
+card({id:'csun',who:'夏日',seal:'晒',text:'来京第二年，你已经拥有三件防晒衣。今天路过店铺，蕉下在打折。',
+  L:{cap:'第四件，安排',fx:{m:-5,e:3}},R:{cap:'黑色羽绒服的钱不能省',fx:{m:2,h:-2}}});
+card({id:'cnety',who:'网抑云',seal:'乐',text:'深夜，音乐 App 根据大数据给你推送了《我会自己上厕所》。你点开了。',
+  L:{cap:'循环播放，效率提升三倍',fx:{h:8,e:4}},R:{cap:'关掉，网抑云时间结束',fx:{h:-3,e:3}}});
+card({id:'cover',who:'加班',seal:'肝',text:'今晚的活，明早就要。工位的灯像审讯室一样亮。',
+  L:{cap:'肝完再走',fx:{e:-12,b:8,m:3}},R:{cap:'到点就跑，明早再说',fx:{e:5,b:-7,h:4}}});
+card({id:'crent',who:'房东',seal:'租',text:'房东发来消息：“考虑到市场行情，下季度租金微调 300。”你环顾这个没有你家猫活动范围大的“温馨一居”。',
+  L:{cap:'认了，搬家更贵',fx:{m:-9,h:-4}},R:{cap:'砍价！引用贝壳数据',fx:{m:-3,h:2,e:-4}}});
+card({id:'chelm',who:'骑行',seal:'盔',text:'下雨天。你的头盔里灌满了水，戴上去像给自己浇花。前方路口隐约有位交警。',
+  L:{cap:'戴上，往下滴水',fx:{h:-6,e:-2,b:2}},R:{cap:'拎在手里赌一把',fx:{h:3},set:['helmet_risk']}});
+card({id:'chelm2',who:'交警',seal:'警',cond:{flag:'helmet_risk',p:.6},once:true,text:'交警把你拦下了。他看了看你滴水的头盔，说：“我给你开个单子——以后再有人说你不戴头盔，你就给他看。赶紧把头盔摘了吧。”',
+  L:{cap:'规定无情人有情[玫瑰]',fx:{h:9}},R:{cap:'愣在原地笑出声',fx:{h:9,e:2}}});
+card({id:'cbus',who:'公交',seal:'等',text:'地铁站离家三公里。公交二十分钟一班，你刚好目送上一班离开。',
+  L:{cap:'等，就当罚站',fx:{e:-5,h:-5}},R:{cap:'走回去，就当锻炼',fx:{e:-8,h:2}}});
+card({id:'crail',who:'市郊铁路',seal:'轨',text:'你想体验一下传说中的市郊铁路通勤。查了时刻表：三小时一趟。孙欲晓称之为“牛马专线”。',
+  L:{cap:'掐点体验一次',fx:{h:6,e:-5}},R:{cap:'算了，还是 6 号线',fx:{h:-3,e:-2}}});
+card({id:'creport',who:'制度',seal:'报',text:'温馨提示：周末离京需提前报备。你盯着这行字，想起了大同的火山群。',
+  L:{cap:'老实提交报备',fx:{b:5,h:-5},set:['reported']},R:{cap:'这周末哪也不去',fx:{h:-4,e:4}}});
+card({id:'csneak',who:'诱惑',seal:'险',cond:{noflag:'sneak',p:.5},text:'高铁票打折。天津，三十分钟就到，煎饼果子在召唤。报备流程要走三天……不报备的话，当天就能来回。',
+  L:{cap:'偷偷去，当天回',fx:{h:10,m:-5},set:['sneak']},R:{cap:'不冒险，点份煎饼外卖',fx:{h:2,m:-3}}});
+card({id:'ccheck',who:'核查',seal:'查',cond:{flag:'sneak',p:.45},once:true,chainless:true,text:'院里开始核对上季度的出行记录。你的手机相册里，还存着那张海河边的自拍。定位信息，清清楚楚。',
+  L:{cap:'主动交代',end:'chujing'},R:{cap:'删照片，赌不查',end:'chujing'}});
+card({id:'cdrone0',who:'橱窗',seal:'翼',cond:{noflag:'drone_own'},text:'商场里，新款无人机在转圈。你想起有人说过：空中俯瞰的野鸭湖，好棒。',
+  L:{cap:'买了，周末去郊区飞',fx:{m:-12,h:8},set:['drone_own']},R:{cap:'看看就好，禁飞区伤不起',fx:{h:-2,m:2}}});
+card({id:'cdrone1',who:'手痒',seal:'翼',cond:{flag:'drone_own',p:.4},once:true,text:'无人机在家吃灰三个月了。今天天气极好，楼下的宽马路在阳光下闪闪发光。就飞一下，拍一张，马上降。',
+  L:{cap:'五环内，起飞',end:'drone'},R:{cap:'忍住，查好空域再说',fx:{h:-3,b:1}}});
+card({id:'cyeast0',who:'热搜',seal:'宠',cond:{noflag:'yeast_own'},text:'你刷到有人“养酵母当宠物”，每天喂面粉，会呼吸，会长大。评论区：最实用的一集❤️。',
+  L:{cap:'养一罐，取名“馒头”',fx:{h:6},set:['yeast_own']},R:{cap:'离谱，关掉',fx:{h:1}}});
+card({id:'cyeast1',who:'出差',seal:'宠',cond:{flag:'yeast_own',p:.4},once:true,text:'连续加班一周，你想起了冰箱上的那罐酵母。它已经三天没有喂面粉了。罐子里安静得可怕。',
+  L:{cap:'冲回家抢救',fx:{e:-8,h:4,b:-4}},R:{cap:'工作要紧，它能挺住',end:'yeast'}});
+card({id:'csubway',who:'早高峰',seal:'挤',text:'4 号线，人贴人。你被夹在两个背包中间，双脚离地前行了半站。',
+  L:{cap:'借力打力，节省体力',fx:{e:-4,h:-4}},R:{cap:'下一班再挤',fx:{e:-2,h:-2,b:-3}}});
+card({id:'csign',who:'标识',seal:'迷',text:'换乘通道里，同一个楼梯，一半写着“出口”，一半写着“换乘”。你跟着人流走，走到了反方向。',
+  L:{cap:'相信直觉，原路返回',fx:{e:-6,h:-3}},R:{cap:'问工作人员',fx:{h:3,e:-2}}});
+card({id:'cbreak',who:'早餐',seal:'晨',text:'你买了豆浆油条想带进站。安检小哥看了一眼，你俩心照不宣：带进去可以，别在车上吃。',
+  L:{cap:'站台上吃完再上车',fx:{h:6,e:3}},R:{cap:'拎着，到单位吃凉的',fx:{h:-4,e:2}}});
+card({id:'ccat',who:'深夜',seal:'猫',text:'室友的猫“豆子”蹲在你的键盘上，用过得太爽的眼神看着你。它今天睡了十四个小时。',
+  L:{cap:'rua 它，汲取能量',fx:{h:9,e:2}},R:{cap:'羡慕，然后继续加班',fx:{h:-5,b:3}}});
+card({id:'chot',who:'三伏',seal:'暑',cond:{dmin:170,dmax:240},text:'40 度。柏油路软了，你的防晒衣里能拧出水。成都的朋友发来消息：“我们高温假第三天啦。”',
+  L:{cap:'已读不回',fx:{h:-8}},R:{cap:'回复：北京欢迎你',fx:{h:-4,e:-2}}});
+card({id:'cheat',who:'供暖',seal:'暖',cond:{dmin:315},text:'供暖了。屋里终于有了 26 度，窗外呼啸。你抱着暖气片，突然理解了猫。',
+  L:{cap:'幸福地瘫着',fx:{h:9,e:6}},R:{cap:'趁状态好，赶个方案',fx:{b:6,e:-6}}});
+card({id:'csoho',who:'探店',seal:'宿',text:'朋友约你体验望京 SOHO 的“超狭窄小酒店”，据说床和墙之间只能侧身通过。',
+  L:{cap:'去！体验派',fx:{m:-6,h:8}},R:{cap:'我家就够狭窄了',fx:{h:-2,m:2}}});
+card({id:'ccousin',who:'表妹',seal:'亲',text:'表妹发来消息：“哥，我也想去北京闯闯！”你看着窗外的六环，手指悬在键盘上。',
+  L:{cap:'“来！后半生幸福就靠它了”',fx:{h:5}},R:{cap:'发给她你的房租账单',fx:{h:-3,m:1}}});
+card({id:'cktv',who:'团建预告',seal:'聚',text:'部门团建投票：A. 唱歌，B. 爬山，C. 不团建。领导已投 A，并@了所有人。',
+  L:{cap:'跟投 A，麦霸模式',fx:{b:8,e:-6,h:3}},R:{cap:'投 C，做真实的自己',fx:{b:-8,h:6}}});
+card({id:'cfence',who:'栅栏',seal:'栏',text:'目的地就在马路对面 20 米。最近的过街天桥在 400 米外。栅栏在阳光下泛着冷光。',
+  L:{cap:'绕，遵纪守法',fx:{e:-6}},R:{cap:'翻（快速地）',fx:{e:-2,h:4,b:-3}}});
+card({id:'cstand',who:'工位',seal:'坐',text:'未时，枯坐之刑。你已经保持同一姿势三小时，腰在报警，颈椎在罢工。',
+  L:{cap:'起来接水走两圈',fx:{e:4,b:-2}},R:{cap:'再撑一会儿，快写完了',fx:{e:-7,b:4}}});
+card({id:'cwolt',who:'深夜食堂',seal:'夜',text:'加班到十点，写字楼下只剩一家还亮着灯的兰州拉面。老板说：“大碗没有了，小碗管够。”',
+  L:{cap:'两个小碗',fx:{m:-4,e:8,h:4}},R:{cap:'回家泡面',fx:{m:-1,e:3,h:-2}}});
+card({id:'cmoon',who:'月之暗面',seal:'AI',text:'你让 AI 帮你写周报。它写完后加了一句：“建议定期休假，人类需要维护。”你怀疑它的底层代码里藏了不少东西。',
+  L:{cap:'听 AI 的，申请年假',fx:{h:8,b:-5},set:['leave_asked']},R:{cap:'删掉那句，照常提交',fx:{b:4,h:-4}}});
+card({id:'cleave',who:'年假',seal:'假',cond:{flag:'leave_asked',p:.7},once:true,text:'年假申请被退回，批注：“Q3 任务较重，建议 Q4 再议。”现在是 Q2。',
+  L:{cap:'Q4 就 Q4（自我安慰）',fx:{h:-7,b:3}},R:{cap:'年假留着，暗戳戳攒到明年',fx:{h:-3},set:['leave_saved']}});
+card({id:'cshan',who:'老家',seal:'鲁',text:'妈妈打来电话：“老家考公上岸的同学又买房了，一百二十平。”电话这头，你的“温馨一居”正好停电。',
+  L:{cap:'“妈，北京机会多”',fx:{h:-5,b:1}},R:{cap:'认真考虑了五分钟',fx:{h:-8,m:1}}});
+card({id:'cchunyun',who:'春运',seal:'归',cond:{dmin:20,dmax:45},once:true,text:'抢票软件显示：候补人数 892。你的加速包已经拉了七个好友。',
+  L:{cap:'再买三个加速包',fx:{m:-6,h:3}},R:{cap:'错峰，年后再回',fx:{h:-7,m:3}}});
+card({id:'cliuxu',who:'四月',seal:'絮',cond:{dmin:95,dmax:125},text:'杨柳絮攻击开始了。整座城市像打翻的枕头。你在飞絮里睁不开眼，前面的大爷戴着泳镜骑车。',
+  L:{cap:'跟大爷买同款泳镜',fx:{m:-2,h:7}},R:{cap:'口罩+眯眼硬闯',fx:{e:-4,h:-3}}});
+
+card({id:'clate',who:'4 号线',seal:'延',text:'“列车延误，请耐心等待。”站台上人越积越多，你的打卡时间在倒数。',
+  L:{cap:'冲出去打车',fx:{m:-8,b:3,e:-2}},R:{cap:'等，迟到就迟到',fx:{b:-6,h:2}}});
+card({id:'cnap',who:'午休',seal:'憩',text:'午休二十分钟。你刚趴下，领导的消息进来了：“帮我取个快递，顺便。”',
+  L:{cap:'“好的收到！”',fx:{b:6,e:-6,h:-4}},R:{cap:'装睡，没看见',fx:{b:-5,e:8}}});
+card({id:'cconf',who:'会议室',seal:'占',text:'第三次抢会议室失败。系统显示：全部占用。你路过时看见其中一间里，一个人对着电脑吃面。',
+  L:{cap:'楼道里站着开',fx:{e:-6,h:-4,b:2}},R:{cap:'改线上会',fx:{h:-2,e:2}}});
+card({id:'cshuttle',who:'班车',seal:'末',text:'22:07。末班班车 22:10 发车。你还有一段“马上就好”的话没跟领导说完。',
+  L:{cap:'“领导我先撤了！”',fx:{b:-6,e:6,h:4}},R:{cap:'听完，自费打车',fx:{b:7,m:-9}}});
+card({id:'cdust',who:'沙尘',seal:'尘',cond:{dmin:60,dmax:125},text:'今晨的天是橘黄色的。口罩、风镜、防晒衣，你全副武装出门，像去执行地外任务。',
+  L:{cap:'硬闯上班',fx:{e:-6,h:-4,b:3}},R:{cap:'申请居家办公',fx:{b:-4,h:5,e:4}}});
+card({id:'clove',who:'室友',seal:'恋',text:'室友的对象在大兴，她在通州。“每次见面地铁一小时起步，我们只能在中点约会。”她问你：这样的恋爱还要不要谈？',
+  L:{cap:'“要！中点也是点”',fx:{h:5}},R:{cap:'“先搬家，再谈情”',fx:{h:2,m:-1}}});
+card({id:'cbird2',who:'窗台',seal:'鸟',text:'加班到黄昏，一只北红尾鸲落在窗台上，歪头看了你三秒，飞走了。',
+  L:{cap:'拍下来发群里',fx:{h:8}},R:{cap:'看着它飞远，发一会儿呆',fx:{h:6,e:3}}});
+card({id:'cpol',who:'课题',seal:'研',text:'资料显示：某轮规划期间，三个站内便利店试点曾作为亮点案例书写，后因“安全隐患”悄然停止推进。你盯着这行字。',
+  L:{cap:'写进报告，如实呈现',fx:{b:-4,h:6}},R:{cap:'换个委婉的说法',fx:{b:6,h:-5}}});
+card({id:'csurveywork',who:'同事',seal:'卷',text:'第 4 位同事今天找你填问卷。“就两分钟！师门任务！”你的浏览器里还开着自己没填完的那份。',
+  L:{cap:'填！互助互爱',fx:{e:-3,h:2,b:2}},R:{cap:'“下班再填”（不会填的）',fx:{h:1,b:-2}}});
+card({id:'cmilk',who:'下午三点',seal:'饮',text:'部门拼单奶茶。接龙已经 9 人，就差你。你看了看余额，又看了看体检报告。',
+  L:{cap:'跟单，合群要紧',fx:{m:-3,h:4,b:3}},R:{cap:'“我戒糖了”',fx:{h:-2,b:-2,e:2}}});
+card({id:'cmem',who:'手机',seal:'存',text:'手机存储空间不足。罪魁祸首：微信 62G——其中大半是群里的表情包和长截图。',
+  L:{cap:'咬牙清理两小时',fx:{e:-5,h:-2}},R:{cap:'换个 512G 的',fx:{m:-13,h:6}}});
+card({id:'cgym',who:'健身房',seal:'练',text:'公司楼下健身房年卡促销，“日均只要一杯奶茶钱”。你去年办的卡，一共去了三次。',
+  L:{cap:'今年一定：办！',fx:{m:-9,e:4,h:2}},R:{cap:'通勤就是我的健身',fx:{h:2,m:2}}});
+card({id:'cpingyou',who:'年度评优',seal:'评',cond:{dmin:300},once:true,text:'评优名额下来了，一个。领导意味深长地看了你一眼，又看了看隔壁工位加班最狠的同事。',
+  L:{cap:'主动争取，述职拉满',fx:{b:9,e:-8}},R:{cap:'让给同事，人情做足',fx:{b:-3,h:6}}});
+card({id:'cprint',who:'打印机',seal:'卡',text:'汇报前十分钟，打印机卡纸了。它发出濒死的声响，屏幕上闪烁着你看不懂的错误代码。',
+  L:{cap:'徒手拆机抢救',fx:{e:-5,b:5}},R:{cap:'跑去别的楼层打印',fx:{e:-7,h:-2}}});
+card({id:'cquiet',who:'车厢',seal:'噪',text:'安静车厢里，一位大爷开着最大音量刷短视频。全车厢用眼神进行了一场无声的审判。没有人说话。',
+  L:{cap:'轻声提醒大爷',fx:{h:4,e:-3}},R:{cap:'戴上耳机，眼不见为净',fx:{h:-3,e:2}}});
+
+/* ---------- 组员事件链 ---------- */
+/* 孙欲晓：充电宝三部曲 */
+card({id:'sxx1',who:'孙欲晓',seal:'孙',tag:'事件链 · 充电宝 1/3',once:true,text:'“完了完了，这个牌子的充电宝，这个出站口根本没有桩！上次我就是这样花 99 买断了一个[捂脸]”她举着 1% 电量的手机看着你。',
+  L:{cap:'陪她找桩，重磅出击',fx:{e:-5,h:3},next:'sxx2'},R:{cap:'劝她直接买断止损',fx:{h:-2},next:'sxx3'}});
+card({id:'sxx2',who:'孙欲晓',seal:'孙',tag:'事件链 · 充电宝 2/3',chain:true,text:'找到了！桩就在商场负一层！——它要求：下载 App、注册会员、绑定手机号、开通免密支付。手机电量：1%。',
+  L:{cap:'抢时间，注册！',fx:{e:-4},next:'sxx3'},R:{cap:'别赌了，买断吧',next:'sxx3'}});
+card({id:'sxx3',who:'孙欲晓',seal:'孙',tag:'事件链 · 充电宝 3/3',chain:true,text:'“……99 元，买断。从此它就是我的了！”她把充电宝举过头顶，像举起一座奖杯，“规定无情人有情[玫瑰]”。你们在商场门口笑作一团。',
+  L:{cap:'为她鼓掌',fx:{h:10,m:-2},set:['fav_sxx']},R:{cap:'合影留念发群里',fx:{h:9},set:['fav_sxx']}});
+card({id:'sxxcat',who:'孙欲晓',seal:'孙',cond:{flag:'fav_sxx'},once:true,text:'“我发现一个选题：北京越不宜居，养猫率越高——猫不用遛！你看这个群，3 只鸟 1 只陆龟还有一罐酵母。我要研究！”',
+  L:{cap:'联署支持',fx:{h:6,e:-2}},R:{cap:'建议加上养狗对照组',fx:{h:4,b:2}}});
+
+/* 陈思伽：破防与水 */
+card({id:'csj1',who:'陈思伽',seal:'伽',tag:'事件链 · 破防 1/2',once:true,text:'“我朋友在成都休高温假 8 天，回来还能再休 2 天！2500 租三室两卫！精装修！”她的表情写着四个字：已经破防。',
+  L:{cap:'递上一瓶水安抚',fx:{m:-1,h:2},next:'csj2'},R:{cap:'“别看了，会变柠檬精”',fx:{h:-2},next:'csj2'}});
+card({id:'csj2',who:'陈思伽',seal:'伽',tag:'事件链 · 破防 2/2',chain:true,text:'她喝了口水，缓缓说：“好吧，北京也不是一无是处——全国最能吃苦的人都在北京，而最有意思的人，都在这个群。”',
+  L:{cap:'“明年搞适活行动！”',fx:{h:9},set:['fav_csj']},R:{cap:'默默点头，记进备忘录',fx:{h:7,b:2},set:['fav_csj']}});
+
+/* 杨红叶：观鸟与直梯 */
+card({id:'yhy1',who:'杨红叶',seal:'叶',tag:'事件链 · 观鸟 1/2',once:true,text:'“周末去野鸭湖观鸟吗？”她压低声音，“别声张……我怕彻底改变大家对我的印象。”望远镜已经在她包里了。',
+  L:{cap:'去！京郊不用报备',fx:{e:-4,h:6},next:'yhy2'},R:{cap:'“周末我得洗衣服……”',fx:{h:-3}}});
+card({id:'yhy2',who:'杨红叶',seal:'叶',tag:'事件链 · 观鸟 2/2',chain:true,text:'野鸭湖。她指着芦苇丛：“北红尾鸲！”那一瞬间她整个人在发光，和保密专区里捕捉领导签字的她判若两人。回程路上你们聊了一路 14 转 3 的迷宫。',
+  L:{cap:'约定下次带上全组',fx:{h:8,e:3},set:['fav_yhy']},R:{cap:'帮她保守观鸟的秘密',fx:{h:9},set:['fav_yhy']}});
+
+/* 黄睿：冷枪与升华 */
+card({id:'hr1',who:'黄睿',seal:'睿',tag:'事件链 · 冷枪 1/2',once:true,text:'你兴冲冲地说周末要出去玩。黄睿抬起头，平静地说出七个字：“你不得报备出京。”',
+  L:{cap:'硬扛这记冷枪',fx:{h:-12},next:'hr2'},R:{cap:'“……我去京郊！”',fx:{h:-5},next:'hr2'}});
+card({id:'hr2',who:'黄睿',seal:'睿',tag:'事件链 · 冷枪 2/2',chain:true,text:'看你破防，他难得地补了一句：“别这个表情。养啥的都有，养好自己的成本太高。”——你愣了一下。这话，居然有点升华。',
+  L:{cap:'“升华了。”',fx:{h:9},set:['fav_hr']},R:{cap:'记进金句收藏夹',fx:{h:10},set:['fav_hr']}});
+
+/* 魏琛：livehouse 与广渠门外 */
+card({id:'wc1',who:'魏琛',seal:'琛',tag:'事件链 · 洋气 1/2',once:true,text:'“我发现一个 livehouse，就在 CBD 一个国企闲置园区改造里。其实我是去调研的。”她顿了顿，“没有座位，一群人站着听。”',
+  L:{cap:'同去！站着算什么',fx:{m:-6,e:-7,h:10},next:'wc2'},R:{cap:'“上下班站够了……”',fx:{h:-2}}});
+card({id:'wc2',who:'魏琛',seal:'琛',tag:'事件链 · 洋气 2/2',chain:true,text:'散场后脚站抽筋的你们蹲在路边。她忽然说：“广渠门外那站，上盖商业衔接挺好，但经营很惨——空间融合了，业态为什么活不下去？”你们聊到了末班车。',
+  L:{cap:'“这个值得探索！”',fx:{h:8,b:3},set:['fav_wc']},R:{cap:'把问题记进课题本',fx:{h:6,e:-2},set:['fav_wc']}});
+
+/* 赵昭：伞 */
+card({id:'zz1',who:'赵昭',seal:'昭',tag:'事件链 · 伞 1/2',once:true,text:'暴雨。你在楼道捡到一把伞，柄上贴着一张便利贴：“赵昭”。窗外的雨像 4 号线早高峰一样密。',
+  L:{cap:'冒雨给她送过去',fx:{e:-5},next:'zz2'},R:{cap:'先借用一下，周一还',fx:{h:3,b:-2},next:'zz2'}});
+card({id:'zz2',who:'赵昭',seal:'昭',tag:'事件链 · 伞 2/2',chain:true,text:'“啊。”她看到伞。“啊。”她认出是你。“啊！！谢谢！！”她想了想，郑重回赠你一条情报：“livehouse 二层消费酒水可以坐，一层都是站刑。”',
+  L:{cap:'收下这条人生情报',fx:{h:8},set:['fav_zz']},R:{cap:'“啊。”（学她）',fx:{h:10},set:['fav_zz']}});
+
+/* 游鸿：说明与团建 */
+card({id:'yh1',who:'游鸿',seal:'游',tag:'事件链 · 组长 1/2',once:true,text:'组长在写《未经审批因私出国（境）问题说明》，写到一半抬头问你：“你说，我要不要把和李颖的行程也写清楚？”',
+  L:{cap:'“写！秀领导一脸”',fx:{h:6},next:'yh2'},R:{cap:'“写成出行指南小心传阅”',fx:{h:4},next:'yh2'}});
+card({id:'yh2',who:'游鸿',seal:'游',tag:'事件链 · 组长 2/2',chain:true,text:'说明交上去了。据说领导看完沉默良久，只说了一句：“行程安排得是真好。”组长转头对你说：“今夏，大同，火山群，谋划起来。刑期之内，先去东灵山。”',
+  L:{cap:'“我话扔这儿：必去！”',fx:{h:10},set:['fav_yh']},R:{cap:'主动请缨做攻略',fx:{h:7,e:-3},set:['fav_yh']}});
+
+/* 陈宇琳：学术认证 */
+card({id:'cyl1',who:'陈宇琳',seal:'宇',tag:'特邀观察员',once:true,text:'清华的陈老师在群里发言：“填完问卷，开了个线上会，发现一小时的信息量，比我挂职一年都大[呲牙]”',
+  L:{cap:'“我们群是真正的田野！”',fx:{h:8},set:['fav_cyl']},R:{cap:'默默截图存档',fx:{h:6,b:2},set:['fav_cyl']}});
+
+/* ---------- 日程卡：问卷炸群之夜 ---------- */
+card({id:'zq1',who:'深夜的群',seal:'炸',tag:'年度事件 · 炸群之夜 1/4',cond:{dmin:195,dmax:235},once:true,w:8,text:'深夜，组长往群里扔了一份《轨道交通站点出行专项调研》问卷。几分钟后，消息开始以肉眼可见的速度刷新……',
+  L:{cap:'立刻填问卷 + 参战',fx:{e:-3},next:'zq2'},R:{cap:'装没看见，明早再说',fx:{h:-4},next:'zq4'}});
+card({id:'zq2',who:'群聊',seal:'炸',tag:'年度事件 · 炸群之夜 2/4',chain:true,text:'无障碍迷宫、买不到水、充电宝惨案、栅栏结界——吐槽像开了闸。有人说“讨论住房我唯唯诺诺，讨论地铁我重磅出击”。楼层疯涨。',
+  L:{cap:'贡献你的惨案',fx:{h:8,e:-2},next:'zq3'},R:{cap:'专心接梗盖章',fx:{h:6},next:'zq3'}});
+card({id:'zq3',who:'群聊',seal:'炸',tag:'年度事件 · 炸群之夜 3/4',chain:true,text:'凌晨，组长发布《京城四绝·重制版》：衣囚、食刑前餐、住盒、行上刑。全场沸腾。有人补充：“6 号线无网络信号刑。”有人宣布：今晚定名《一份调研问卷引发的惨案》。',
+  L:{cap:'笑到手机脱手',fx:{h:10,e:-4},next:'zqend'},R:{cap:'把金句一条条存下来',fx:{h:8},next:'zqend'}});
+card({id:'zqend',who:'天亮了',seal:'炸',tag:'年度事件 · 炸群之夜 4/4',chain:true,text:'564 条消息。你顶着黑眼圈想：明明吐槽了一整晚的惨，为什么心里这么暖。也许因为——很难同时找到这么多苦中作乐的人。',
+  L:{cap:'“这个群发挥了它应有的作用”',fx:{h:9,e:-5},set:['zq_done']},R:{cap:'默默把群置顶',fx:{h:9,e:-5},set:['zq_done']}});
+card({id:'zq4',who:'次日清晨',seal:'炸',tag:'年度事件 · 炸群之夜 · 潜水线',chain:true,text:'你一觉醒来，群里 564 条未读。你像考古一样从头爬楼，手指划酸，笑到邻座侧目——但终究，错过了现场。',
+  L:{cap:'在群里痛心疾首',fx:{h:4,e:-2},set:['zq_done']},R:{cap:'学高宏博：深藏功与名',fx:{h:3},set:['zq_done']}});
+
+/* ---------- 年末卡 ---------- */
+card({id:'newyear',who:'跨年夜',seal:'岁',cond:{dmin:358},once:true,w:99,text:'一年的最后一晚。你站在“温馨一居”的窗前，窗外是六环的车灯。这一年：地铁、栅栏、会议、报备……还有那个凌晨四点还在笑的群。',
+  L:{cap:'给群里发：明年继续',fx:{h:5},days:7},R:{cap:'早点睡，明年还得挤 4 号线',fx:{e:5},days:7}});
+
+/* ================================================================
+   引擎
+================================================================ */
+var S=null;
+var SEASONS=[[0,'一月 · 供暖季'],[32,'二月 · 春运'],[60,'三月 · 开春'],[95,'四月 · 杨柳絮预警'],[126,'五月 · 短暂的春天'],[157,'六月 · 入夏'],[182,'七月 · 三伏'],[213,'八月 · 桑拿天'],[244,'九月 · 北京蓝'],[274,'十月 · 短暂的秋天'],[305,'十一月 · 等供暖'],[335,'十二月 · 岁末']];
+var BADGE_DEF=[['fav_yh','游'],['fav_sxx','孙'],['fav_csj','伽'],['fav_yhy','叶'],['fav_hr','睿'],['fav_wc','琛'],['fav_zz','昭'],['fav_cyl','宇']];
+var CARDMAP={};C.forEach(function(c){CARDMAP[c.id]=c;});
+
+function newGame(){
+  S={day:1,h:50,m:50,e:50,b:50,flags:{},used:{},cool:[],queue:[],over:false,cur:null};
+  renderStats(true);renderBadges();renderDay();
+  drawNext(true);
+}
+function condOk(c){
+  var cd=c.cond;
+  if(c.once&&S.used[c.id])return false;
+  if(!cd)return true;
+  if(cd.flag&&!S.flags[cd.flag])return false;
+  if(cd.noflag&&S.flags[cd.noflag])return false;
+  if(cd.dmin&&S.day<cd.dmin)return false;
+  if(cd.dmax&&S.day>cd.dmax)return false;
+  if(cd.p!=null&&Math.random()>cd.p)return false;
+  return true;
+}
+function pickCard(){
+  if(S.queue.length)return CARDMAP[S.queue.shift()];
+  var elig=C.filter(function(c){return !c.chain&&S.cool.indexOf(c.id)<0&&condOk(c);});
+  if(!elig.length){elig=C.filter(function(c){return !c.chain&&condOk(c);});}
+  if(!elig.length){elig=[CARDMAP.cweekend];}
+  var tot=0;elig.forEach(function(c){tot+=(c.w||1);});
+  var r=Math.random()*tot;
+  for(var i=0;i<elig.length;i++){r-=(elig[i].w||1);if(r<=0)return elig[i];}
+  return elig[elig.length-1];
+}
+function applyChoice(c,side){
+  var ch=c[side];
+  S.used[c.id]=true;
+  S.cool.push(c.id);if(S.cool.length>16)S.cool.shift();
+  if(ch.end){gameOver(ch.end);return;}
+  var fx=ch.fx||{};
+  ['h','m','e','b'].forEach(function(k){
+    var d=fx[k];if(!d)return;
+    /* 边际递减：越接近极端，往极端方向的变化折半 */
+    if(d>0&&S[k]>=78)d=Math.ceil(d/2);
+    if(d<0&&S[k]<=22)d=Math.trunc(d/2)||-1;
+    S[k]=Math.max(0,Math.min(100,S[k]+d));
+  });
+  (ch.set||[]).forEach(function(f){S.flags[f]=true;});
+  if(ch.next)S.queue.push(ch.next);
+  S.day+=ch.days||(2+Math.floor(Math.random()*4));
+  renderStats();renderBadges();renderDay();
+  /* 死亡判定 */
+  var dead=null;
+  if(S.h<=0)dead='h0';else if(S.h>=100)dead='h100';
+  else if(S.m<=0)dead='m0';else if(S.m>=100)dead='m100';
+  else if(S.e<=0)dead='e0';else if(S.e>=100)dead='e100';
+  else if(S.b<=0)dead='b0';else if(S.b>=100)dead='b100';
+  if(dead){gameOver(dead);return;}
+  if(S.day>365){
+    var badges=BADGE_DEF.filter(function(b){return S.flags[b[0]];}).length;
+    var avg=(S.h+S.m+S.e+S.b)/4;
+    gameOver(badges>=7?'win_true':(avg>=60?'win_good':'win_ok'));
+    return;
+  }
+  drawNext();
+}
+
+/* ================================================================
+   渲染
+================================================================ */
+var zone=document.getElementById('cardzone');
+function renderDay(){
+  document.getElementById('dayN').textContent=Math.min(S.day,365);
+  document.getElementById('dayfill').style.width=Math.min(100,S.day/365*100)+'%';
+  var tx=SEASONS[0][1];
+  SEASONS.forEach(function(s){if(S.day>=s[0])tx=s[1];});
+  document.getElementById('seasonTx').textContent=tx;
+}
+function renderStats(instant){
+  ['h','m','e','b'].forEach(function(k){
+    var el=document.querySelector('.stat[data-k="'+k+'"]');
+    var f=el.querySelector('.fill');
+    if(instant)f.style.transition='none';
+    f.style.height=S[k]+'%';
+    if(instant){void f.offsetHeight;f.style.transition='';}
+    el.classList.toggle('danger',S[k]<=20||S[k]>=80);
+  });
+}
+function renderBadges(){
+  var w=document.getElementById('badges');w.innerHTML='';
+  BADGE_DEF.forEach(function(b){
+    var d=document.createElement('div');
+    d.className='bd'+(S.flags[b[0]]?' got':'');
+    d.textContent=b[1];w.appendChild(d);
+  });
+}
+function makeCardEl(c){
+  var el=document.createElement('div');el.className='card';
+  el.innerHTML=
+    '<div class="head"><div class="seal">'+(c.seal||c.who.charAt(0))+'</div>'+
+    '<div><div class="who">'+c.who+'</div>'+(c.tag?'<div class="tag">'+c.tag+'</div>':'')+'</div></div>'+
+    '<div class="body"><p>'+c.text+'</p></div>'+
+    '<div class="caps"><span class="cap l">◀ '+c.L.cap+'</span><span class="cap r">'+c.R.cap+' ▶</span></div>'+
+    '<div class="hint">← 左右拖动做出选择 →</div>';
+  return el;
+}
+function drawNext(first){
+  if(S.over)return;
+  S.cur=pickCard();
+  var el=makeCardEl(S.cur);
+  var nxt=zone.querySelector('.card.under');
+  if(nxt)zone.removeChild(nxt);
+  var under=document.createElement('div');under.className='card under';
+  zone.insertBefore(under,zone.firstChild);
+  zone.appendChild(el);
+  if(!first){
+    el.style.transition='none';el.style.transform='scale(.94) translateY(10px)';el.style.opacity='.6';
+    void el.offsetHeight;
+    el.style.transition='transform .25s ease,opacity .25s ease';
+    el.style.transform='';el.style.opacity='1';
+  }
+  attachDrag(el);
+}
+
+/* ---------- 拖拽 ---------- */
+function attachDrag(el){
+  var startX=0,dx=0,dragging=false,committed=false;
+  var capL=el.querySelector('.cap.l'),capR=el.querySelector('.cap.r');
+  function showDots(side){
+    var fx=side?(S.cur[side].fx||{}):{};
+    ['h','m','e','b'].forEach(function(k){
+      var dot=document.querySelector('.stat[data-k="'+k+'"] .dot');
+      var v=fx[k];
+      if(v&&!S.cur[side].end){dot.classList.add('show');dot.classList.toggle('big',Math.abs(v)>=10);}
+      else if(S.cur[side]&&S.cur[side].end){dot.classList.add('show');dot.classList.add('big');}
+      else{dot.classList.remove('show','big');}
+    });
+    if(!side)document.querySelectorAll('.stat .dot').forEach(function(d){d.classList.remove('show','big');});
+  }
+  function onDown(e){
+    if(committed||S.over)return;
+    dragging=true;startX=e.clientX;dx=0;
+    el.style.transition='none';
+    el.setPointerCapture&&el.setPointerCapture(e.pointerId);
+  }
+  function onMove(e){
+    if(!dragging||committed)return;
+    dx=e.clientX-startX;
+    el.style.transform='translateX('+dx+'px) rotate('+(dx*0.05)+'deg)';
+    var a=Math.min(1,Math.abs(dx)/70);
+    if(dx<0){capL.style.opacity=a;capR.style.opacity=0;showDots(a>0.25?'L':null);}
+    else if(dx>0){capR.style.opacity=a;capL.style.opacity=0;showDots(a>0.25?'R':null);}
+  }
+  function onUp(){
+    if(!dragging||committed)return;
+    dragging=false;
+    if(Math.abs(dx)>85){commit(dx<0?'L':'R');}
+    else{
+      el.style.transition='transform .25s ease';
+      el.style.transform='';
+      capL.style.opacity=0;capR.style.opacity=0;showDots(null);
+    }
+  }
+  function commit(side){
+    committed=true;showDots(null);
+    var dir=side==='L'?-1:1;
+    el.style.transition='transform .3s ease,opacity .3s ease';
+    el.style.transform='translateX('+(dir*(window.innerWidth*0.7+200))+'px) rotate('+(dir*24)+'deg)';
+    el.style.opacity='0';
+    setTimeout(function(){
+      if(el.parentNode)el.parentNode.removeChild(el);
+      applyChoice(S.cur===null?null:CARDMAP[S.cur.id],side);
+    },260);
+  }
+  el.addEventListener('pointerdown',onDown);
+  el.addEventListener('pointermove',onMove);
+  el.addEventListener('pointerup',onUp);
+  el.addEventListener('pointercancel',onUp);
+  el._commit=commit;
+}
+window.addEventListener('keydown',function(e){
+  if(S&&!S.over&&document.getElementById('title').style.display==='none'
+     &&document.getElementById('endscreen').style.display!=='flex'
+     &&document.getElementById('dex').style.display!=='flex'){
+    var top=zone.querySelector('.card:not(.under)');
+    if(!top||!top._commit)return;
+    if(e.key==='ArrowLeft')top._commit('L');
+    if(e.key==='ArrowRight')top._commit('R');
+  }
+});
+
+/* ================================================================
+   结局 & 图鉴
+================================================================ */
+function loadDex(){
+  try{return JSON.parse(localStorage.getItem('nm365_endings')||'[]');}catch(e){return [];}
+}
+function saveDex(arr){try{localStorage.setItem('nm365_endings',JSON.stringify(arr));}catch(e){}}
+function gameOver(endId){
+  S.over=true;
+  var got=loadDex();
+  var isNew=got.indexOf(endId)<0;
+  if(isNew){got.push(endId);saveDex(got);}
+  var E=ENDINGS[endId];
+  document.getElementById('endTitle').textContent=E.t;
+  document.getElementById('endDesc').textContent=E.d;
+  document.getElementById('endStats').textContent=
+    '存活 '+Math.min(S.day,365)+' 天 · 😊'+S.h+' 💰'+S.m+' 💪'+S.e+' 👔'+S.b+
+    ' · 好感章 '+BADGE_DEF.filter(function(b){return S.flags[b[0]];}).length+'/8';
+  document.getElementById('endCollect').textContent=
+    (isNew?'✦ 新结局收录！':'（此结局已收录）')+'《服刑记录簿》'+got.length+' / '+DEX_ORDER.length;
+  var es=document.getElementById('endscreen');
+  es.style.display='flex';
+  es.classList.remove('show');void es.offsetWidth;es.classList.add('show');
+}
+function openDex(){
+  var got=loadDex();
+  var g=document.getElementById('dexgrid');g.innerHTML='';
+  DEX_ORDER.forEach(function(id){
+    var e=ENDINGS[id],has=got.indexOf(id)>=0;
+    var d=document.createElement('div');
+    d.className='dexcell '+(has?'open':'lock');
+    d.innerHTML='<div class="t">'+(has?e.t:'？？？')+'</div><div class="k">'+e.k+'</div>';
+    g.appendChild(d);
+  });
+  document.getElementById('dexCount').textContent='已收录 '+got.length+' / '+DEX_ORDER.length+' 种结局';
+  document.getElementById('dex').style.display='flex';
+}
+document.getElementById('dexBtn').addEventListener('click',openDex);
+document.getElementById('dexBtn2').addEventListener('click',openDex);
+document.getElementById('dexClose').addEventListener('click',function(){document.getElementById('dex').style.display='none';});
+document.getElementById('startBtn').addEventListener('click',function(){
+  document.getElementById('title').style.display='none';
+  newGame();
+});
+document.getElementById('againBtn').addEventListener('click',function(){
+  document.getElementById('endscreen').style.display='none';
+  zone.innerHTML='';
+  newGame();
+});
+})();
+</script>
+</body>
+</html>
