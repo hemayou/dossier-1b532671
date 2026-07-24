@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>一份调研问卷引发的惨案 · 专案卷宗</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📕</text></svg>">
+<style>
+:root{
+  --desk:#17140f;
+  --paper:#f0ece3;
+  --paper-dim:#e6e1d5;
+  --ink:#1f1c19;
+  --ink2:#6e6759;
+  --ink3:#a39c8d;
+  --seal:#b3231f;
+  --seal-dark:#8f1b18;
+  --carbon:#2d4a73;
+  --kraft:#b49a6e;
+  --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+  --kai:"Kaiti SC","STKaiti","KaiTi",serif;
+  --sans:-apple-system,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  overflow-x:hidden;
+  background:var(--desk);
+  background-image:radial-gradient(ellipse 120% 60% at 50% -10%,#241f16 0%,var(--desk) 60%);
+  color:var(--ink);
+  font-family:var(--serif);
+  line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--seal);color:#fff}
+
+/* ============ 顶部卷宗标签导航 ============ */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(23,20,15,.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(180,154,110,.25);
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;
+  padding:0 8px;
+}
+nav::-webkit-scrollbar{display:none}
+nav .tabs{display:flex;gap:2px;min-width:max-content;padding-top:10px}
+nav a{
+  font-family:var(--serif);font-size:13px;letter-spacing:.15em;
+  color:var(--kraft);text-decoration:none;
+  padding:7px 14px 8px;
+  background:rgba(180,154,110,.08);
+  border:1px solid rgba(180,154,110,.28);border-bottom:none;
+  border-radius:6px 6px 0 0;
+  white-space:nowrap;
+  transition:background .2s,color .2s;
+}
+nav a:hover,nav a:focus-visible{background:rgba(180,154,110,.22);color:#e8dcc4}
+nav a:focus-visible{outline:2px solid var(--kraft);outline-offset:-2px}
+
+/* ============ 纸张卷宗页 ============ */
+main{max-width:760px;margin:0 auto;padding:26px 12px 80px}
+.sheet{
+  position:relative;
+  background:var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 27px,rgba(31,28,25,.028) 27px 28px),
+    linear-gradient(160deg,rgba(255,255,255,.5) 0%,transparent 40%);
+  border-radius:3px;
+  box-shadow:0 1px 2px rgba(0,0,0,.5),0 12px 40px rgba(0,0,0,.55),inset 0 0 60px rgba(180,154,110,.07);
+  margin:0 0 34px;
+  padding:34px 22px 42px;
+  scroll-margin-top:64px;
+}
+@media(min-width:600px){.sheet{padding:48px 52px 56px}}
+.sheet::before{ /* 骑缝装订孔 */
+  content:"";position:absolute;left:9px;top:60px;bottom:60px;width:0;
+  border-left:2px dotted rgba(110,103,89,.35);
+}
+/* 卷宗页眉 */
+.sheet-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:26px}
+.sheet-no{font-family:var(--serif);font-weight:900;font-size:15px;letter-spacing:.4em;color:var(--seal)}
+.sheet-title{font-family:var(--serif);font-weight:900;font-size:clamp(20px,5vw,26px);letter-spacing:.18em}
+.sheet-meta{font-family:var(--mono);font-size:11px;color:var(--ink2);letter-spacing:.05em;white-space:nowrap}
+.sheet-sub{font-family:var(--kai);font-size:14px;color:var(--ink2);margin:-18px 0 24px;letter-spacing:.08em}
+
+/* ============ 印章 ============ */
+.stamp{
+  display:inline-block;
+  font-family:var(--serif);font-weight:900;
+  color:var(--seal);
+  border:3px solid var(--seal);
+  border-radius:6px;
+  padding:.28em .55em;
+  letter-spacing:.28em;text-indent:.28em;
+  transform:rotate(-7deg);
+  position:relative;
+  mix-blend-mode:multiply;
+  box-shadow:inset 0 0 0 1.5px var(--paper),inset 0 0 0 2.5px var(--seal);
+  -webkit-mask-image:radial-gradient(circle at 30% 40%,#000 30%,rgba(0,0,0,.82) 60%,rgba(0,0,0,.95) 100%);
+          mask-image:radial-gradient(circle at 30% 40%,#000 30%,rgba(0,0,0,.82) 60%,rgba(0,0,0,.95) 100%);
+}
+.stamp.round{border-radius:50%;padding:.9em .5em;letter-spacing:.1em;text-indent:.1em;font-size:13px;line-height:1.35;text-align:center}
+.stamp-drop{opacity:0;transform:rotate(-7deg) scale(2.6)}
+.in .stamp-drop,
+.stamp-drop.landed{
+  animation:stampdown .45s cubic-bezier(.2,1.6,.4,1) forwards;
+}
+@keyframes stampdown{
+  0%{opacity:0;transform:rotate(-16deg) scale(2.6)}
+  70%{opacity:1;transform:rotate(-6deg) scale(.94)}
+  100%{opacity:1;transform:rotate(-7deg) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  .stamp-drop{opacity:1;transform:rotate(-7deg) scale(1)}
+  .in .stamp-drop,.stamp-drop.landed{animation:none}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1!important;transform:none!important;transition:none!important}
+  .bar i{transition:none!important}
+}
+
+/* 滚动浮现 */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.in.reveal,.in .reveal{opacity:1;transform:none}
+
+/* ============ 封面 ============ */
+#cover{padding-top:64px;padding-bottom:70px;text-align:center}
+#cover .archive-no{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--ink2)}
+#cover .secret{margin:26px 0 8px;font-size:15px;letter-spacing:.5em;color:var(--ink2)}
+#cover .secret s{color:var(--ink3);text-decoration-thickness:2px;text-decoration-color:var(--seal)}
+#cover h1{
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(30px,8vw,52px);
+  letter-spacing:.1em;line-height:1.5;
+  margin:10px 0 6px;
+}
+#cover h1 .kicker{display:block;font-size:clamp(14px,3.6vw,18px);font-weight:400;letter-spacing:.5em;color:var(--ink2);margin-bottom:14px}
+#cover .case-line{font-family:var(--kai);font-size:15px;color:var(--ink2);margin-top:18px;line-height:2.1}
+#cover .cover-stamp{font-size:clamp(22px,5.6vw,30px);margin-top:34px}
+#cover .cover-foot{margin-top:46px;font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.12em}
+.seal-square{ /* 落款方章 */
+  display:inline-flex;align-items:center;justify-content:center;
+  width:58px;height:58px;border-radius:5px;
+  background:var(--seal);color:#f5efe4;
+  font-family:var(--serif);font-weight:900;font-size:15px;line-height:1.25;
+  letter-spacing:.1em;text-align:center;
+  transform:rotate(3deg);
+  box-shadow:inset 0 0 0 2px #f5efe4,inset 0 0 0 4px var(--seal);
+  mix-blend-mode:multiply;
+}
+
+/* ============ 公文正文 ============ */
+.doc p{font-size:15.5px;text-align:justify;margin-bottom:1em;text-indent:2em}
+.doc p.noindent{text-indent:0}
+.doc .hl{color:var(--seal);font-weight:700}
+.doc .term{font-weight:700}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:26px 0 6px}
+@media(min-width:600px){.tiles{grid-template-columns:repeat(6,1fr)}}
+.tile{background:rgba(31,28,25,.045);border:1px solid rgba(31,28,25,.14);border-radius:4px;padding:12px 6px 10px;text-align:center}
+.tile b{display:block;font-family:var(--mono);font-size:clamp(19px,4.5vw,24px);font-weight:700;letter-spacing:-.02em}
+.tile.red b{color:var(--seal)}
+.tile span{display:block;font-size:11px;color:var(--ink2);letter-spacing:.15em;margin-top:3px}
+
+/* ============ 时间线 ============ */
+.timeline{position:relative;margin-top:8px}
+.timeline::before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:repeating-linear-gradient(180deg,var(--ink3) 0 6px,transparent 6px 11px)}
+.tl-item{position:relative;padding:0 0 6px 32px;margin-bottom:8px}
+.tl-item::before{content:"";position:absolute;left:2px;top:9px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:3px solid var(--ink)}
+.tl-item.boom::before{background:var(--seal);border-color:var(--seal);box-shadow:0 0 0 4px rgba(179,35,31,.18)}
+.tl-btn{
+  display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;
+  font-family:var(--serif);color:var(--ink);padding:4px 0;
+}
+.tl-time{font-family:var(--mono);font-size:12px;color:var(--seal);letter-spacing:.05em;font-weight:700}
+.tl-title{font-size:16.5px;font-weight:900;letter-spacing:.05em;display:inline}
+.tl-hint{font-size:11px;color:var(--ink3);margin-left:.6em;letter-spacing:.1em}
+.tl-body{
+  max-height:0;overflow:hidden;transition:max-height .45s ease;
+  font-size:14px;color:var(--ink2);
+}
+.tl-item.open .tl-body{max-height:900px}
+.tl-body .inner{padding:8px 0 10px;border-left:3px solid rgba(179,35,31,.25);padding-left:12px;margin:6px 0 4px}
+.tl-body p{margin-bottom:.5em}
+.tl-quote{font-family:var(--kai);color:var(--ink);background:rgba(31,28,25,.05);padding:7px 10px;border-radius:3px;margin:6px 0;font-size:13.5px;line-height:1.75}
+.tl-quote em{font-style:normal;color:var(--seal);font-size:12px;margin-right:.5em}
+
+/* ============ 烈度曲线 ============ */
+.seismo{margin:30px 0 4px}
+.seismo h3,.chart h3{font-size:15px;font-weight:900;letter-spacing:.2em;margin-bottom:4px}
+.seismo .cap,.chart .cap{font-size:12px;color:var(--ink2);margin-bottom:14px;letter-spacing:.04em}
+.seismo-plot{position:relative;height:150px;display:flex;align-items:flex-end;gap:1px;border-bottom:2px solid var(--ink);padding-bottom:0}
+.seismo-plot .sb{flex:1;background:var(--ink2);min-height:1px;border-radius:2px 2px 0 0;position:relative;cursor:pointer;transition:height .8s cubic-bezier(.2,.8,.2,1);height:0}
+.seismo-plot .sb.peak{background:var(--seal)}
+.seismo-plot .sb:hover,.seismo-plot .sb:active{background:var(--ink)}
+.seismo-plot .sb.peak:hover,.seismo-plot .sb.peak:active{background:var(--seal-dark)}
+.peak-note{position:absolute;font-family:var(--mono);font-size:10.5px;color:var(--seal);top:-4px;letter-spacing:.03em;white-space:nowrap;font-weight:700}
+.seismo-x{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:5px;letter-spacing:.02em}
+.seismo-tip{
+  position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:3px;
+  transform:translate(-50%,-130%);white-space:nowrap;opacity:0;transition:opacity .15s;z-index:5;
+}
+.seismo-tip.show{opacity:1}
+
+/* ============ 条形图 ============ */
+.chart{margin:30px 0 4px}
+.bar-list{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:5.2em 1fr;align-items:center;gap:10px;font-size:13.5px}
+.bar .who{text-align:right;letter-spacing:.02em;color:var(--ink);font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{position:relative;height:20px}
+.bar i{
+  position:absolute;left:0;top:2px;bottom:2px;width:0;
+  background:var(--ink2);border-radius:0 4px 4px 0;
+  transition:width .9s cubic-bezier(.2,.8,.2,1);
+}
+.bar.first i{background:var(--seal)}
+.bar .val{position:absolute;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:11.5px;color:var(--ink2);font-weight:700;padding-left:6px;white-space:nowrap}
+.bar.first .val{color:var(--seal)}
+.bar .note{grid-column:2;font-size:11px;color:var(--ink3);margin-top:-3px;letter-spacing:.05em}
+.chart-note{font-family:var(--kai);font-size:13px;color:var(--carbon);margin-top:12px;padding-left:1em;border-left:3px solid rgba(45,74,115,.4);line-height:1.9}
+
+/* 表情武器库 */
+.arsenal{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.weapon{background:rgba(31,28,25,.05);border:1px solid rgba(31,28,25,.14);border-radius:4px;padding:7px 11px;font-size:13px;display:flex;align-items:baseline;gap:7px}
+.weapon b{font-family:var(--mono);font-size:15px;color:var(--seal)}
+.weapon span{color:var(--ink2);font-size:12px}
+
+/* ============ 人员档案卡 ============ */
+.cards{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.cards{grid-template-columns:1fr 1fr}}
+.card{
+  position:relative;background:#fff;
+  background-image:linear-gradient(150deg,rgba(240,236,227,.7),rgba(255,255,255,0) 55%);
+  border:1px solid rgba(31,28,25,.18);border-radius:4px;
+  padding:16px 16px 14px;cursor:pointer;
+  box-shadow:0 1px 3px rgba(31,28,25,.12);
+  transition:box-shadow .2s,transform .2s;
+}
+.card:hover{box-shadow:0 4px 14px rgba(31,28,25,.18);transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.card-top{display:flex;gap:12px;align-items:flex-start}
+.mug{
+  flex:none;width:52px;height:52px;border-radius:4px;
+  background:var(--seal);color:#f5efe4;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-weight:900;font-size:24px;
+  box-shadow:inset 0 0 0 2px #f5efe4,inset 0 0 0 3.5px var(--seal);
+  transform:rotate(-3deg);mix-blend-mode:multiply;
+}
+.card h4{font-size:17px;font-weight:900;letter-spacing:.1em}
+.card .role{font-size:11px;color:var(--ink2);letter-spacing:.18em;margin-top:1px}
+.card .caseno{position:absolute;top:12px;right:14px;font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.1em}
+.card .crime{font-size:13px;color:var(--ink2);margin-top:9px;line-height:1.7}
+.card .crime b{color:var(--seal);font-weight:700}
+.card-more{
+  max-height:0;overflow:hidden;transition:max-height .5s ease;
+  font-size:13px;color:var(--ink2);
+}
+.card.open .card-more{max-height:1200px}
+.card-more .inner{padding-top:10px;margin-top:10px;border-top:1px dashed rgba(31,28,25,.22)}
+.card-more dt{font-size:11px;color:var(--seal);letter-spacing:.25em;font-weight:700;margin:9px 0 2px}
+.card-more dd{line-height:1.75}
+.card-more .q{font-family:var(--kai);color:var(--ink);background:rgba(31,28,25,.045);padding:6px 9px;border-radius:3px;margin-top:3px;font-size:13px;line-height:1.7}
+.card .expand-hint{font-size:10.5px;color:var(--ink3);letter-spacing:.2em;text-align:right;margin-top:9px}
+.card.open .expand-hint .arr{display:inline-block;transform:rotate(180deg)}
+.card .stat-chip{display:inline-block;font-family:var(--mono);font-size:10.5px;background:rgba(179,35,31,.08);color:var(--seal);border-radius:3px;padding:1px 6px;margin:6px 4px 0 0;letter-spacing:.02em}
+
+/* ============ 物证 ============ */
+.exhibit{
+  border:2px solid var(--ink);border-radius:4px;
+  padding:22px 18px;margin:10px 0 26px;position:relative;
+  background:rgba(255,255,255,.5);
+}
+.exhibit .ex-tag{
+  position:absolute;top:-13px;left:16px;background:var(--paper);
+  padding:0 10px;font-size:12px;letter-spacing:.3em;font-weight:900;color:var(--seal);
+}
+.exhibit h5{font-size:16px;font-weight:900;letter-spacing:.1em;margin-bottom:12px;text-align:center}
+.sijue{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:600px){.sijue{grid-template-columns:1fr 1fr}}
+.sijue .item{background:rgba(31,28,25,.04);border-radius:3px;padding:12px 14px}
+.sijue .item b{display:block;font-size:16px;color:var(--seal);letter-spacing:.15em;margin-bottom:4px}
+.sijue .item p{font-size:13px;color:var(--ink2);line-height:1.75;text-align:justify}
+.exhibit .ex-src{font-family:var(--mono);font-size:10.5px;color:var(--ink3);text-align:right;margin-top:12px;letter-spacing:.05em}
+
+.quotes{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){.quotes{grid-template-columns:1fr 1fr}}
+.quote-card{background:rgba(255,255,255,.55);border:1px solid rgba(31,28,25,.15);border-left:4px solid var(--seal);border-radius:3px;padding:13px 14px}
+.quote-card p{font-family:var(--kai);font-size:14.5px;line-height:1.8;color:var(--ink)}
+.quote-card .src{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-top:7px;letter-spacing:.06em}
+
+.destroyed{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.destroyed .dcard{
+  border:1.5px dashed rgba(31,28,25,.35);border-radius:3px;padding:16px 10px;
+  text-align:center;cursor:pointer;color:var(--ink3);font-size:13px;letter-spacing:.15em;
+  background:repeating-linear-gradient(45deg,transparent 0 8px,rgba(31,28,25,.025) 8px 16px);
+  transition:transform .15s;user-select:none;font-family:var(--serif);
+}
+.destroyed .dcard:active{transform:scale(.97)}
+.destroyed .dcard b{display:block;color:var(--ink2);font-size:14px;margin-bottom:4px;letter-spacing:.25em}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px) rotate(-1deg)}50%{transform:translateX(5px)}75%{transform:translateX(-4px) rotate(1deg)}}
+
+/* ============ 严肃彩蛋（复写蓝） ============ */
+#leads .sheet-title{color:var(--carbon)}
+#leads .sheet-head{border-color:var(--carbon)}
+#leads .sheet-no{color:var(--carbon)}
+.lead{border-left:3px solid rgba(45,74,115,.5);padding:2px 0 2px 14px;margin-bottom:18px}
+.lead h6{font-size:15px;font-weight:900;color:var(--carbon);letter-spacing:.06em;margin-bottom:3px}
+.lead h6 .no{font-family:var(--mono);font-size:12px;margin-right:.6em}
+.lead p{font-size:13.5px;color:var(--ink2);text-align:justify;line-height:1.8}
+.lead p .who{color:var(--carbon);font-weight:700}
+.lead-note{font-family:var(--kai);color:var(--carbon);font-size:13.5px;background:rgba(45,74,115,.06);border-radius:3px;padding:10px 14px;margin-top:20px;line-height:1.9}
+
+/* ============ 结案 ============ */
+#verdict .doc p{font-size:15.5px}
+.next-plans{display:grid;grid-template-columns:1fr;gap:10px;margin:20px 0}
+@media(min-width:600px){.next-plans{grid-template-columns:1fr 1fr}}
+.plan{border:1px solid rgba(31,28,25,.2);border-radius:4px;padding:14px 15px;background:rgba(255,255,255,.4)}
+.plan b{font-size:15px;letter-spacing:.1em}
+.plan .tag{float:right;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:3px;letter-spacing:.1em}
+.plan .tag.ok{background:rgba(45,74,115,.12);color:var(--carbon)}
+.plan .tag.wait{background:rgba(179,35,31,.1);color:var(--seal)}
+.plan p{font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.7}
+.verdict-stamp-zone{text-align:center;margin:38px 0 10px}
+.verdict-stamp-zone .stamp{font-size:clamp(24px,6vw,34px)}
+.sign-line{display:flex;justify-content:flex-end;align-items:center;gap:14px;margin-top:34px;font-family:var(--kai);font-size:14px;color:var(--ink2)}
+
+/* ============ 尾注 ============ */
+footer{max-width:760px;margin:0 auto;padding:0 20px 60px;text-align:center}
+footer p{font-family:var(--mono);font-size:10.5px;color:rgba(180,154,110,.55);letter-spacing:.15em;line-height:2.2}
+
+/* toast */
+#toast{
+  position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);font-size:13px;font-family:var(--serif);
+  padding:12px 18px;border-radius:4px;max-width:86vw;line-height:1.7;
+  opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:200;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);letter-spacing:.03em;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<nav aria-label="卷宗目录">
+  <div class="tabs">
+    <a href="#cover">封面</a>
+    <a href="#brief">卷一·提要</a>
+    <a href="#timeline-sec">卷二·还原</a>
+    <a href="#stats">卷三·罪证</a>
+    <a href="#members">卷四·人员</a>
+    <a href="#exhibits">卷五·物证</a>
+    <a href="#leads">卷六·收获</a>
+    <a href="#verdict">卷七·结案</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ================= 封面 ================= -->
+<section class="sheet" id="cover">
+  <div class="archive-no">档案号：（2026）京房课密字第 0724 号 · 共柒卷</div>
+  <div class="secret"><s>绝密</s>　→　内部传阅</div>
+  <h1>
+    <span class="kicker">住房课题小组 · 专案卷宗</span>
+    一份调研问卷<br>引发的惨案
+  </h1>
+  <div class="case-line">
+    案发时间：2026 年 7 月 24 日　04:56 — 08:39<br>
+    案发地点：微信群“住房课题小组”（在册 14 人）<br>
+    案件定性：群体性苦中作乐事件
+  </div>
+  <div class="cover-stamp">
+    <span class="stamp stamp-drop" id="coverStamp">查　实</span>
+  </div>
+  <div class="cover-foot">
+    ※ 本卷宗全部数据取自案发现场原始记录，共 564 条，未作任何虚构 ※<br>
+    ↓ 向下翻阅卷宗 ↓
+  </div>
+</section>
+
+<!-- ================= 卷一 案情提要 ================= -->
+<section class="sheet reveal" id="brief">
+  <div class="sheet-head">
+    <span class="sheet-no">卷壹</span>
+    <span class="sheet-title">案 情 提 要</span>
+    <span class="sheet-meta">P.1/7</span>
+  </div>
+  <div class="doc">
+    <p>经查：2026 年 7 月 24 日凌晨 04 时 56 分，犯罪嫌疑人<span class="term">游鸿</span>（男，重庆籍，自称已被京城驯化为“糙人”）在“住房课题小组”微信群内投放《轨道交通站点出行专项调研》问卷一份，并附赠通勤体检报告材料四件。<span class="hl">该行为直接引发持续 3 小时 43 分钟的群体性情绪释放</span>。</p>
+    <p>案件初期尚属正常填报秩序，自 05 时 10 分起，多名组员以“填问卷”为由，对北京地铁之无障碍设施、站内商业、标识系统、公交接驳等展开供述，供述内容层层加码、互相印证，形成完整证据链。05 时 52 分，游鸿发布《京城四绝·重制版》檄文，案情彻底失控。</p>
+    <p>案发期间共产生消息 <span class="hl">564 条</span>，接梗（引用回复）<span class="hl">86 次</span>，动用表情包 <span class="hl">42 枚</span>，销毁证据（撤回）<span class="hl">2 条</span>。烈度峰值出现于 06 时 21 分至 26 分，五分钟内爆发消息 <span class="hl">70 条</span>，折合每分钟 14 条，为该群建群以来历史极值。</p>
+    <p class="noindent" style="margin-top:20px"><b>涉案基本数据如下：</b></p>
+  </div>
+  <div class="tiles">
+    <div class="tile red"><b>564</b><span>涉案消息</span></div>
+    <div class="tile"><b>223<i style="font-style:normal;font-size:12px">分钟</i></b><span>持续时长</span></div>
+    <div class="tile red"><b>70</b><span>峰值·条/5分钟</span></div>
+    <div class="tile"><b>86</b><span>接梗次数</span></div>
+    <div class="tile"><b>42</b><span>表情包消耗</span></div>
+    <div class="tile"><b>2</b><span>证据被销毁</span></div>
+  </div>
+</section>
+
+<!-- ================= 卷二 案发过程还原 ================= -->
+<section class="sheet reveal" id="timeline-sec">
+  <div class="sheet-head">
+    <span class="sheet-no">卷贰</span>
+    <span class="sheet-title">案 发 过 程 还 原</span>
+    <span class="sheet-meta">P.2/7</span>
+  </div>
+  <p class="sheet-sub">以下时间轴依据现场原始记录逐条比对复原，点击各节点可调阅当时供述。</p>
+
+  <div class="seismo">
+    <h3>案发烈度记录仪</h3>
+    <p class="cap">每五分钟消息条数 · 04:56—08:39 · 点按曲线可查看具体时段</p>
+    <div class="seismo-plot" id="seismoPlot" role="img" aria-label="消息烈度曲线：峰值为06时21分的五分钟70条">
+      <div class="seismo-tip" id="seismoTip"></div>
+    </div>
+    <div class="seismo-x"><span>05:00</span><span>05:30</span><span>06:00</span><span>06:30</span><span>07:00</span><span>07:30</span><span>08:00</span><span>08:30</span></div>
+  </div>
+
+  <div class="timeline" id="tl" style="margin-top:34px"></div>
+</section>
+
+<!-- ================= 卷三 罪证统计 ================= -->
+<section class="sheet reveal" id="stats">
+  <div class="sheet-head">
+    <span class="sheet-no">卷叁</span>
+    <span class="sheet-title">罪 证 统 计</span>
+    <span class="sheet-meta">P.3/7</span>
+  </div>
+  <p class="sheet-sub">所有数字均为程序清点原始记录所得，一条不多，一条不少。</p>
+
+  <div class="chart" id="chart-total">
+    <h3>发言量清单</h3>
+    <p class="cap">按消息条数排序 · 首犯以红色标注</p>
+    <div class="bar-list" data-chart="total"></div>
+    <p class="chart-note">批注：孙欲晓同志以 153 条位列第一，其中 05:27 曾自我供述——“讨论住房我唯唯诺诺，讨论地铁我重磅出击”。证据显示其所言非虚。</p>
+  </div>
+
+  <div class="chart" id="chart-quote">
+    <h3>接梗记录（引用他人消息次数）</h3>
+    <p class="cap">衡量指标：谁在别人的梗上盖了最多章</p>
+    <div class="bar-list" data-chart="quote"></div>
+    <p class="chart-note">批注：杨红叶 78 条发言中 25 条为接梗，接梗率 32%，为全群最高，属“见梗必接”型选手。</p>
+  </div>
+
+  <div class="chart" id="chart-quoted">
+    <h3>被接梗记录（被他人引用次数）</h3>
+    <p class="cap">衡量指标：谁的话最常被人拿去续写</p>
+    <div class="bar-list" data-chart="quoted"></div>
+    <p class="chart-note">批注：陈思伽全场仅接梗 1 次，却被接梗 23 次，输出与吸收比高达 23:1，鉴定为“纯输出型梗源”，建议重点看护。</p>
+  </div>
+
+  <div class="chart" id="chart-haha">
+    <h3>“哈”字排放量</h3>
+    <p class="cap">单位：个 · 全群共计排放 279 个“哈”</p>
+    <div class="bar-list" data-chart="haha"></div>
+    <p class="chart-note">批注：本案笑声排放尚未纳入碳排放核算体系，建议“适活行动”课题予以关注。</p>
+  </div>
+
+  <div class="chart">
+    <h3>作案工具（表情用语）使用登记</h3>
+    <p class="cap">从 564 条消息中依法收缴</p>
+    <div class="arsenal">
+      <div class="weapon"><b>49</b>[捂脸]<span>头号工具</span></div>
+      <div class="weapon"><b>30</b>[旺柴]</div>
+      <div class="weapon"><b>10</b>[凋谢]</div>
+      <div class="weapon"><b>10</b>[苦涩]</div>
+      <div class="weapon"><b>6</b>[裂开]</div>
+      <div class="weapon"><b>5</b>[破涕为笑]</div>
+      <div class="weapon"><b>5</b>[惊讶]</div>
+      <div class="weapon"><b>4</b>[流泪]</div>
+      <div class="weapon"><b>3</b>[玫瑰]</div>
+      <div class="weapon"><b>3</b>[微笑]<span>孙欲晓破防专用</span></div>
+    </div>
+    <p class="chart-note">批注：[捂脸]与[旺柴]合计占比近六成，反映本群“惨中带笑、笑中带惨”之基本盘面。</p>
+  </div>
+</section>
+
+<!-- ================= 卷四 服刑人员档案 ================= -->
+<section class="sheet reveal" id="members">
+  <div class="sheet-head">
+    <span class="sheet-no">卷肆</span>
+    <span class="sheet-title">服 刑 人 员 档 案</span>
+    <span class="sheet-meta">P.4/7</span>
+  </div>
+  <p class="sheet-sub">应组长“蒸馏一下每个人”之要求建档。点击档案卡可调阅完整案底。</p>
+  <div class="cards" id="cards"></div>
+</section>
+
+<!-- ================= 卷五 物证陈列 ================= -->
+<section class="sheet reveal" id="exhibits">
+  <div class="sheet-head">
+    <span class="sheet-no">卷伍</span>
+    <span class="sheet-title">物 证 陈 列</span>
+    <span class="sheet-meta">P.5/7</span>
+  </div>
+
+  <div class="exhibit">
+    <span class="ex-tag">物证壹号</span>
+    <h5>《京城四绝 · 重制版》</h5>
+    <div class="sijue">
+      <div class="item"><b>衣，囚。</b><p>黑白不是穿搭，是服刑编号的颜色。满大街冲锋衣黑白灰，谁也别想在格子间里暴露自己还有审美。穿得最出格的，是小区保安。</p></div>
+      <div class="item"><b>食，刑前餐。</b><p>外卖三件套：塑料盒、地沟油、超时赔付券。三十八块的轻食沙拉，菜叶子比你工资条还薄——这城市连吃饭都杜绝社交。</p></div>
+      <div class="item"><b>住，盒。</b><p>六环外一个盒，月租五千五，通勤两小时，面积没你家猫的活动范围大。房东管这叫“温馨一居”，你管这叫家——因为你已经不敢管别的了。</p></div>
+      <div class="item"><b>行，上刑。</b><p>四号线电刑，三环凌迟，摇号死缓，共享单车违停罚款算减刑。群众补充：6 号线无网络信号刑、雨天头盔水刑、工位枯坐之刑。</p></div>
+    </div>
+    <p class="ex-src">发布于 05:52:50 · 作者：游鸿 · 系本案由吐槽升级为文学创作之转折点</p>
+  </div>
+
+  <div class="exhibit">
+    <span class="ex-tag">物证贰号 · 金句墙</span>
+    <div class="quotes">
+      <div class="quote-card"><p>“全国最能吃苦的人，都在北京。”</p><div class="src">陈思伽 · 05:39</div></div>
+      <div class="quote-card"><p>“北京的幸福感来自于离开北京，去哪里都会感到幸福。”</p><div class="src">孙欲晓 · 05:41</div></div>
+      <div class="quote-card"><p>“对自己的后半生，充满了信心。对能活到后半生，没什么信心。”</p><div class="src">游鸿 · 06:04</div></div>
+      <div class="quote-card"><p>“在我院，骑电动车不戴头盔与贪污受贿的严重程度并列。”</p><div class="src">孙欲晓 · 05:54</div></div>
+      <div class="quote-card"><p>“养啥的都有，养好自己的成本太高。”</p><div class="src">黄睿 · 06:21 · 经鉴定：升华了</div></div>
+      <div class="quote-card"><p>“老站又破又小，新站又大又空。”</p><div class="src">孙欲晓 · 05:13</div></div>
+      <div class="quote-card"><p>“上下班站着，下了班照样站着——站都。”</p><div class="src">游鸿 · 06:25 · 于 livehouse 议题现场</div></div>
+      <div class="quote-card"><p>“住房课题小组，只是一个代号而已，它代表了某种追求，某种气质，某种难以言说的戏谑感、幸福感、松弛感、无力感。”</p><div class="src">游鸿 · 06:18</div></div>
+      <div class="quote-card"><p>“填完地铁问卷，开了个线上会，发现一小时的信息量，比我挂职一年都大。”</p><div class="src">陈宇琳（清华大学）· 06:33 · 学术界最高评价</div></div>
+      <div class="quote-card"><p>“其他人一会儿打开微信，会为错过了这么一个好的谈论话题而感到咬牙切齿。”</p><div class="src">孙欲晓 · 06:18</div></div>
+      <div class="quote-card"><p>“问卷是来炸鱼的。”</p><div class="src">黄睿 · 06:34 · 一语道破案件本质</div></div>
+      <div class="quote-card"><p>“你这个体验，把我们今晚的 context 污染了。”</p><div class="src">游鸿 · 06:23 · 致 livehouse 归来的魏琛</div></div>
+    </div>
+  </div>
+
+  <div class="exhibit">
+    <span class="ex-tag">物证叁号 · 已销毁</span>
+    <div class="destroyed">
+      <div class="dcard" data-who="孙欲晓" data-time="06:03"><b>撤回消息 · 壹</b>点击尝试恢复</div>
+      <div class="dcard" data-who="🍁杨红叶" data-time="06:19"><b>撤回消息 · 贰</b>点击尝试恢复</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 卷六 侦查意外收获 ================= -->
+<section class="sheet reveal" id="leads">
+  <div class="sheet-head">
+    <span class="sheet-no">卷陆</span>
+    <span class="sheet-title">侦 查 意 外 收 获</span>
+    <span class="sheet-meta">P.6/7</span>
+  </div>
+  <p class="sheet-sub">本页以复写蓝誊录。玩笑归玩笑——当晚其实聊出了六条真问题，誊清备查，留给课题。</p>
+
+  <div class="lead"><h6><span class="no">收获一</span>无障碍设施的“用脚投票”指标</h6>
+    <p><span class="who">孙欲晓</span>提出：与其检查设施有没有，不如统计残障人士实际使用北京地铁的规模——“是不是不方便到根本不会选择的程度”。盲人乘地铁能上新闻，本身就是使用成本过高的侧证。这是一个可操作的评估视角。</p></div>
+
+  <div class="lead"><h6><span class="no">收获二</span>站内商业与安全监管的死结</h6>
+    <p><span class="who">陈思伽</span>披露：145 专项规划期间试点三个站内便利店曾作为案例书写，后因“安全隐患”停止推进。<span class="who">孙欲晓</span>类比无人机全域禁飞——问题可能不在风险本身，而在“不想承担审批责任就干脆全禁”的治理逻辑。</p></div>
+
+  <div class="lead"><h6><span class="no">收获三</span>站城融合：连通 ≠ 能活</h6>
+    <p><span class="who">魏琛</span>提出广渠门外之谜：地铁上盖两层商业、衔接良好，经营却很凄惨，站内便民超市亦相继关张。<span class="who">游鸿</span>确认：不少连通站厅的商场同样没人去，关键变量在业态而非连通。此为当晚唯一被组长盖章“值得探索”的问题。</p></div>
+
+  <div class="lead"><h6><span class="no">收获四</span>标识系统的可用性欠账</h6>
+    <p>换乘与出口共用楼梯、指引断链、无障碍标识“写了但找不到”（3 号线 14 转 3 实测：与陌生大哥结伴迷路）。<span class="who">陈思伽</span>的原话值得记录：“天呢！但我一直以为是我的问题！”——坏标识的代价，是让用户自责。</p></div>
+
+  <div class="lead"><h6><span class="no">收获五</span>最后三公里与电动车治理的因果倒置</h6>
+    <p><span class="who">孙欲晓</span>：大家骑电动车不是为了当外卖侠，只是因为地铁太远、公交二十分钟一班。需要管的不是超量的电动车，而是先把公共交通做好。<span class="who">陈思伽</span>补充数据视角：地铁 500 米/1 公里覆盖居住用地比例，与上海对比“绝对完败”，可拉全国排名。</p></div>
+
+  <div class="lead"><h6><span class="no">收获六</span>宜居度的另类代理指标：养猫率</h6>
+    <p><span class="who">孙欲晓</span>选题备案：北京若确实过于不宜居，低照料成本宠物（猫、爬宠、乃至酵母）占比应显著高于其他城市，养狗比例应更低。半开玩笑，但逻辑自洽、数据可查，且已获两名组员联署支持。</p></div>
+
+  <div class="lead-note">
+    另录：通勤对青年社交的挤压（通州—大兴异地恋，每周两见已属不易，长期于中点约会）、市郊铁路“三小时一趟”的服务水平，均可并入适居行动的通勤叙事素材库。<br>
+    ——明年课题若真拓展为“适活行动”，本页即为立项依据。
+  </div>
+</section>
+
+<!-- ================= 卷七 结案 ================= -->
+<section class="sheet reveal" id="verdict">
+  <div class="sheet-head">
+    <span class="sheet-no">卷柒</span>
+    <span class="sheet-title">结 案 意 见</span>
+    <span class="sheet-meta">P.7/7</span>
+  </div>
+  <div class="doc">
+    <p>经合议：本案系一份调研问卷诱发之群体性苦中作乐事件。全体涉案人员到案态度积极、供述踊跃、互为从犯，且在相互接梗过程中表现出罕见的团结协作精神。</p>
+    <p>鉴于各涉案人员长期在京服“通勤刑”“枯坐刑”“摇号死缓”等数罪并罚之刑，认罪悔罪已无必要，决定如下：<span class="hl">全员继续在京服刑，缓期执行；准予以“周末京郊团建”方式保外就医。</span></p>
+    <p class="noindent" style="margin-top:22px"><b>保外就医方案（下一议题）：</b></p>
+  </div>
+  <div class="next-plans">
+    <div class="plan"><span class="tag ok">无需报备</span><b>东灵山 · 周末方案</b>
+      <p>来回方便；没有鸟，但有牛马（比我们强百倍的）；江水河可寻宠物友好民宿，欢迎携犬带鸟带豆子。</p></div>
+    <div class="plan"><span class="tag wait">待出京审批</span><b>大同 · 今夏方案</b>
+      <p>火山群可飞无人机；北魏家宴可不晕碳；已谋划一年未遂。风险提示：严禁同一周末集体申请出京，谨防“聚众出京”定性。</p></div>
+  </div>
+  <div class="doc">
+    <p>另：为杨红叶同志专门创造一次出行机会一事，组长已当众表态（原话：“我话扔这儿～”），本卷宗予以存证，逾期可凭本页申诉。</p>
+  </div>
+  <div class="verdict-stamp-zone">
+    <span class="stamp stamp-drop">永 不 结 案</span>
+  </div>
+  <div class="sign-line">
+    <span>二〇二六年七月二十四日</span>
+    <span class="seal-square">住房<br>课题</span>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>本卷宗由组长委托 AI 于案发当晚连夜蒸馏 · 全部统计为真实数据 · 全部梗均取自案发现场<br>
+  仅限群内传阅 · 外传者需提交《未经审批因私外传聊天记录问题说明》一份</p>
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script>
+/* ---------- 数据（全部来自 564 条原始记录的程序统计） ---------- */
+var SEISMO = [2,0,6,27,19,7,19,5,12,14,20,18,23,21,51,40,40,70,44,13,27,35,17,3,13,7,0,1,1,4,2,0,0,0,0,0,0,0,0,0,0,0,0,2,1];
+var SEISMO_START = new Date(2026,6,24,4,56).getTime();
+
+var CHARTS = {
+  total: [
+    {n:"孙欲晓",v:153},{n:"游鸿",v:133},{n:"陈思伽",v:111},{n:"杨红叶",v:78},
+    {n:"赵昭",v:35},{n:"黄睿",v:27},{n:"魏琛",v:23},{n:"陈宇琳",v:1},{n:"高宏博",v:1,note:"填完问卷即下潜，保持全场唯一清白之身"}
+  ],
+  quote: [
+    {n:"孙欲晓",v:32},{n:"杨红叶",v:25},{n:"游鸿",v:11},{n:"黄睿",v:8},
+    {n:"赵昭",v:5},{n:"魏琛",v:4},{n:"陈思伽",v:1}
+  ],
+  quoted: [
+    {n:"陈思伽",v:23},{n:"游鸿",v:22},{n:"孙欲晓",v:15},{n:"杨红叶",v:11},
+    {n:"魏琛",v:7},{n:"黄睿",v:6},{n:"赵昭",v:2}
+  ],
+  haha: [
+    {n:"孙欲晓",v:96},{n:"陈思伽",v:82},{n:"游鸿",v:57},{n:"黄睿",v:26},
+    {n:"杨红叶",v:15},{n:"魏琛",v:3}
+  ]
+};
+
+var TIMELINE = [
+  {t:"04:56",title:"引信投放",boom:false,body:[
+    "游鸿在群内投放《轨道交通站点出行专项调研》问卷。高宏博 4 分钟内完成填报并打卡，随后从本案中彻底消失，成为全场唯一未被卷入者。",
+    {q:"游鸿",s:"我把城建交通院小伙伴的成果发给大家参考，我刚跟他们总工打完 2 个小时的电话！"}
+  ]},
+  {t:"05:10",title:"供述开始：地铁体验大起底",boom:false,body:[
+    "填报秩序失守。无障碍设施找不到、站内买不到水、标识系统迷宫化、充电宝 99 元买断惨案等供述接连涌现，形成完整证据链。",
+    {q:"孙欲晓",s:"曾因为还不上充电宝而花 99 元买下一个充电宝[玫瑰]"},
+    {q:"陈思伽",s:"天呢！但我一直以为是我的问题！是标识的问题吗[破涕为笑]"},
+    {q:"杨红叶",s:"3 号线一出门写着无障碍换乘，结果上了电梯下电梯，左走右走，最后成功和一个大哥一起迷路[捂脸]"}
+  ]},
+  {t:"05:27",title:"数据加重情节",boom:false,body:[
+    "供述由体验层面升级至数据层面，量刑情节显著加重。",
+    {q:"孙欲晓",s:"讨论住房我唯唯诺诺，讨论地铁我重磅出击[旺柴][旺柴][旺柴]"},
+    {q:"陈思伽",s:"地铁 500m 覆盖范围的居住用地比例，可以拉下跟上海对比——绝对完败"}
+  ]},
+  {t:"05:39",title:"情绪总爆发前夜",boom:false,body:[
+    "话题从地铁蔓延至这座城市本身：2180 万铁人、黑白穿搭、防晒衣进化史。",
+    {q:"游鸿",s:"所以，这座城市居然到今天还有 2180 万人，都是铁人……"},
+    {q:"陈思伽",s:"全国最能吃苦的人，都在北京"},
+    {q:"杨红叶",s:"我朋友们穿得五颜六色一看就是游客…而我已经黑白[心碎]"}
+  ]},
+  {t:"05:52",title:"爆炸点：《京城四绝》发布",boom:true,body:[
+    "游鸿发布《京城四绝·重制版》，“刑”字宇宙就此开启。群众踊跃增补罪名：6 号线无网络信号刑、雨天头盔水刑、不戴头盔=贪污。",
+    {q:"孙欲晓",s:"在我院，骑电动车不戴头盔与贪污受贿的严重程度并列"},
+    {q:"孙欲晓",s:"交警说：我给你开一个单子，如果再有人说你不戴头盔，你就给他看。你赶紧把头盔摘了吧[捂脸]"}
+  ]},
+  {t:"06:10",title:"意外爆料：《问题说明》文学",boom:true,body:[
+    "《未经审批因私出国（境）问题说明》原件曝光，因行程过于详实被群众当作出行指南与转机攻略研读；“五年不批”刑期公布，赵昭当场破碎。",
+    {q:"孙欲晓",s:"这看似是一份情况说明，实则是一个出行指南啊，家人们！请求放出下半篇，我想知道印尼的行程如何规划"},
+    {q:"游鸿",s:"我郑重承诺，我绝没有在菲律宾的海底接触敌对人员——因为只有鱼和大海参"},
+    {q:"孙欲晓",s:"正在严肃学习游鸿哥的行程安排，每次都要提到李颖姐，看文件的领导只会感觉被秀了一脸恩爱"}
+  ]},
+  {t:"06:21",title:"烈度峰值：五分钟 70 条",boom:true,body:[
+    "全案最高峰。魏琛迟到入场即遭信息量冲击；宠物普查同步展开：3 只鸟、1 只陆龟 Herman、若干猫、传说中的酵母。",
+    {q:"魏琛",s:"为什么会有这么多层楼？我手指都酸了"},
+    {q:"黄睿",s:"养啥的都有，养好自己的成本太高"},
+    {q:"游鸿",s:"我很害怕，我们家的陆龟，某天会被我饿死……"}
+  ]},
+  {t:"06:33",title:"学术认证与“适活行动”提案",boom:false,body:[
+    "清华大学陈宇琳老师现身，给予本案学术界最高评价；“适活行动”研究构想同步立项（口头）。",
+    {q:"陈宇琳",s:"填完地铁问卷，开了个线上会，发现一小时的信息量，比我挂职一年都大[呲牙]"},
+    {q:"陈思伽",s:"明年课题拓展一下、搞个“适活行动”研究吧哈哈哈"},
+    {q:"游鸿",s:"适居行动 → 适活行动 → 逃离行动"}
+  ]},
+  {t:"06:46",title:"网抑云环节",boom:false,body:[
+    "网易云向李颖推送《我会自己上厕所》，全场在爆笑与心酸之间反复横跳；“文思如尿崩（对不起）”载入史册。",
+    {q:"游鸿",s:"有一说一，听的我还挺上头，我今天下午工作效率提升 3 倍以上……比一块钱美式好使"}
+  ]},
+  {t:"06:54",title:"组长喊收，预告团建",boom:false,body:[
+    {q:"游鸿",s:"好了，大家赶紧缓刑吧！这个群的下一个议题：周末去个京郊，来回方便，没有鸟，但有牛马（比我们强百倍的），不用报备～"},
+    "赵昭附议。人员携宠名单开始统计（含豆子）。"
+  ]},
+  {t:"07:19",title:"严肃回归：广渠门外之谜",boom:false,body:[
+    "狂欢落幕后，魏琛抛出全场质量最高的专业问题，并顺手举办失物招领（赵昭的伞，扣押至周一）。",
+    {q:"魏琛",s:"广渠门外这一站，地铁上盖两层商业、衔接不错，但经营很凄惨……空间上似乎已经融合，业态为什么活不下去，值得探索。"}
+  ]},
+  {t:"08:33",title:"结案陈词",boom:false,body:[
+    {q:"游鸿",s:"关键不在于联通，而是业态。连通、混合，也不等于能活[呲牙]"},
+    "至此全卷合上。本群圆满完成一次从问卷到人生、再从人生绕回课题的完整闭环。"
+  ]}
+];
+
+var MEMBERS = [
+  {name:"游鸿",role:"主犯 · 组长",no:"001",
+   crime:"投放问卷引发群体性事件；创作《京城四绝》扰乱人心；<b>涉嫌在菲律宾海底接触敌对人员</b>（查实：只有鱼和大海参）。",
+   chips:["发言 133 条","被接梗 22 次","图片投放 7 张"],
+   detail:[
+     ["刑期","出京审批冻结至 2028 年年中。现已将全部旅行预算改为购买 token。"],
+     ["案底","所写《问题说明》因行程规划过于专业，被群众当作出行指南传阅；每份说明必提李颖同志，被指控当着领导的面秀恩爱。"],
+     ["饲养登记","陆龟一只（Herman，好养，活泼），存在被饿死之潜在风险，已列入观察名单。"],
+     ["代表金句",null,"对自己的后半生，充满了信心。对能活到后半生，没什么信心。"]
+   ]},
+  {name:"孙欲晓",role:"话痨之最 · 通州代表",no:"002",
+   crime:"骑行不戴头盔（在其单位与贪污受贿同级）；单日发言 153 条，制造全群三分之一以上噪音；擅自命名本案为《一份调研问卷引发的惨案》。",
+   chips:["发言 153 条 · 全群第一","接梗 32 次 · 第一","排放“哈”96 个 · 第一"],
+   detail:[
+     ["立功表现","提出重大研究选题：北京不宜居程度与养猫率呈正相关（已获两人联署）；建议以残障人士实际使用量反推地铁无障碍成色。"],
+     ["受害记录","充电宝 99 元买断惨案；雨天头盔水刑；被交警劝导当场摘盔。"],
+     ["关联生物","豆子（室友的猫），因过得太爽而令其感到不爽。"],
+     ["代表金句",null,"北京的幸福感来自于离开北京，去哪里都会感到幸福。"]
+   ]},
+  {name:"陈思伽",role:"数据担当 · 破防担当",no:"003",
+   crime:"赴港购买面膜未报备（自辩：“我罪不至死”），刑期至 2030 年；先后因成都高温假、2500 元三室两卫精装修等情报反复破防。",
+   chips:["发言 111 条","被接梗 23 次 · 第一","接梗仅 1 次 · 纯输出"],
+   detail:[
+     ["专业输出","地铁覆盖率对比上海“绝对完败”，建议拉全国排名；披露 145 规划便利店试点被停内幕。"],
+     ["症状记录","“我已经破防很久了”“我看不得别人出去玩，我会变成柠檬精”。"],
+     ["提案","明年课题拓展为“适活行动”（口头立项，本卷宗存证）。"],
+     ["代表金句",null,"这确定是住房课题小组的群吗？"]
+   ]},
+  {name:"杨红叶",role:"接梗率之王 · 观鸟人",no:"004",
+   crime:"幼年无证豢养头类牡丹鹦鹉二只（自首原话：真刑啊）；于 3 号线无障碍换乘处与陌生大哥结伴迷路，造成不良示范。",
+   chips:["接梗率 32% · 全群第一","表情包 11 枚"],
+   detail:[
+     ["隐藏身份","观鸟人（本晚露出马脚，组长惊呼“彻底改变了我对你的印象”）；保密专区签字大师，每天捕捉各种领导，与徐帅热聊后遭冷暴力。"],
+     ["进化史","黑色羽绒服 → 冲锋衣 → 防晒衣。"],
+     ["待遇存证","组长承诺专门为其创造一次出行机会（原话：我话扔这儿～）。"],
+     ["代表金句",null,"聚众出京。"]
+   ]},
+  {name:"黄睿",role:"冷枪手",no:"005",
+   crime:"以 27 条发言完成十余次精准补刀，弹无虚发；入职第一周即因周末不在北京未报备而被盘问，属带案底入职。",
+   chips:["发言 27 条","字字见血"],
+   detail:[
+     ["弹道记录","“问卷是来炸鱼的”“context 有点长了”“你不得出京审批报备，幸福感 -20%”“怕你晕碳不好好工作”“签字求领导让我去工作”。"],
+     ["哲学成就","一句“养啥的都有，养好自己的成本太高”，经杨红叶当场鉴定：升华了。"],
+     ["代表金句",null,"我怀疑月之暗面的人在底层代码里藏了不少东西[旺柴]"]
+   ]},
+  {name:"魏琛",role:"迟到者 · 立功者",no:"006",
+   crime:"于 06:22 迟到入场，爬楼致手指划酸；当晚在 CBD 某 livehouse“调研”至脚站抽筋，手表两次报警（声音过大），自称“我太洋气了”。",
+   chips:["发言 23 条","含金量极高"],
+   detail:[
+     ["重大立功","提出广渠门外站城融合之谜（空间融合 ≠ 业态存活），经组长鉴定“值得探索”，为全案唯一严肃学术成果，建议减刑。"],
+     ["涉案物品","车上捡获雨伞一把（失主赵昭），依法扣押至周一。"],
+     ["代表金句",null,"我刚去听了一个 livehouse，我只能说我太洋气了。"]
+   ]},
+  {name:"赵昭",role:"受惊者",no:"007",
+   crime:"连续单字发言（“啊”“啊”“啊”），涉嫌刷屏；得知“五年不批”后追问“这不是原则上吗”“实际也是吗”，至今无人敢答。",
+   chips:["发言 35 条","单字含量超标"],
+   detail:[
+     ["掌握情报","livehouse 二层消费酒水可入座（一层站刑）。"],
+     ["遗失物","雨伞一把，现由魏琛扣押，周一取回。"],
+     ["代表金句",null,"护照…啊。啊。啊。"]
+   ]},
+  {name:"陈宇琳",role:"特邀观察员 · 清华大学",no:"008",
+   crime:"无罪。全程仅发言一条，但该条被认定为学术界对本案之最高评价。",
+   chips:["发言 1 条","含金量爆表"],
+   detail:[
+     ["到案记录",null,"填完地铁问卷，开了个线上会，发现一小时的信息量，比我挂职一年都大[呲牙]"]
+   ]},
+  {name:"高宏博",role:"锦鲤 · 在逃",no:"009",
+   crime:"04:59 全群第一个完成问卷并打卡，随后光速下潜，完美错过后续 562 条案情，保持全场唯一清白之身。",
+   chips:["发言 1 条","已通缉"],
+   detail:[
+     ["现状","下落不明。组长于 07:01 表达关切：“今晚会不会把宏博和凯琦吓到哈哈哈[旺柴]”。"],
+     ["温馨提示",null,"打开微信前请系好安全带。"]
+   ]}
+];
+
+/* ---------- 渲染 ---------- */
+function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+
+/* 烈度曲线 */
+(function(){
+  var plot=document.getElementById('seismoPlot');
+  var tip=document.getElementById('seismoTip');
+  var max=Math.max.apply(null,SEISMO);
+  var peakIdx=SEISMO.indexOf(max);
+  SEISMO.forEach(function(v,i){
+    var b=el('div','sb'+(i===peakIdx?' peak':''));
+    b.dataset.i=i;b.dataset.v=v;
+    b.style.height='0%';
+    b.setAttribute('aria-hidden','true');
+    plot.appendChild(b);
+    if(i===peakIdx){
+      var note=el('span','peak-note','峰值 70 条 · 魏琛入场');
+      note.style.left=Math.min(72,(i/SEISMO.length)*100)+'%';
+      b.appendChild(note);
+    }
+  });
+  function fmt(i){
+    var t=new Date(SEISMO_START+i*300000);
+    var t2=new Date(SEISMO_START+(i+1)*300000);
+    function p(d){return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+    return p(t)+'–'+p(t2);
+  }
+  plot.addEventListener('click',function(ev){
+    var b=ev.target.closest('.sb');if(!b)return;
+    var r=b.getBoundingClientRect(),pr=plot.getBoundingClientRect();
+    tip.textContent=fmt(+b.dataset.i)+' · '+b.dataset.v+' 条';
+    tip.style.left=(r.left-pr.left+r.width/2)+'px';
+    tip.style.top=(r.top-pr.top)+'px';
+    tip.classList.add('show');
+    clearTimeout(tip._t);tip._t=setTimeout(function(){tip.classList.remove('show');},2200);
+  });
+  /* 进场动画 */
+  var fired=false;
+  new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting&&!fired){fired=true;
+        plot.querySelectorAll('.sb').forEach(function(b,i){
+          setTimeout(function(){b.style.height=Math.max(1.5,(+b.dataset.v/max)*100)+'%';},i*12);
+        });
+      }
+    });
+  },{threshold:.3}).observe(plot);
+})();
+
+/* 时间线 */
+(function(){
+  var wrap=document.getElementById('tl');
+  TIMELINE.forEach(function(item){
+    var it=el('div','tl-item'+(item.boom?' boom':''));
+    var btn=el('button','tl-btn');
+    btn.setAttribute('aria-expanded','false');
+    btn.innerHTML='<span class="tl-time">'+item.t+'</span><br><span class="tl-title">'+item.title+'</span><span class="tl-hint">▾ 调阅</span>';
+    var body=el('div','tl-body');
+    var inner=el('div','inner');
+    item.body.forEach(function(seg){
+      if(typeof seg==='string'){inner.appendChild(el('p',null,seg));}
+      else{inner.appendChild(el('div','tl-quote','<em>'+seg.q+'</em>'+seg.s));}
+    });
+    body.appendChild(inner);
+    btn.addEventListener('click',function(){
+      var open=it.classList.toggle('open');
+      btn.setAttribute('aria-expanded',open?'true':'false');
+      btn.querySelector('.tl-hint').textContent=open?'▴ 收起':'▾ 调阅';
+    });
+    it.appendChild(btn);it.appendChild(body);wrap.appendChild(it);
+  });
+})();
+
+/* 条形图 */
+(function(){
+  document.querySelectorAll('.bar-list').forEach(function(list){
+    var data=CHARTS[list.dataset.chart];
+    var max=data[0].v;
+    data.forEach(function(d,i){
+      var bar=el('div','bar'+(i===0?' first':''));
+      var track=el('div','track');
+      var fill=el('i');fill.dataset.w=Math.max(1.2,(d.v/max)*82);
+      var val=el('span','val',String(d.v));
+      track.appendChild(fill);track.appendChild(val);
+      bar.appendChild(el('span','who',d.n));
+      bar.appendChild(track);
+      if(d.note)bar.appendChild(el('span','note',d.note));
+      list.appendChild(bar);
+    });
+    var fired=false;
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting&&!fired){fired=true;
+          list.querySelectorAll('.bar').forEach(function(bar,i){
+            var f=bar.querySelector('i'),v=bar.querySelector('.val');
+            setTimeout(function(){
+              f.style.width=f.dataset.w+'%';
+              v.style.left=f.dataset.w+'%';
+            },i*70);
+          });
+        }
+      });
+    },{threshold:.25}).observe(list);
+  });
+})();
+
+/* 人员档案卡 */
+(function(){
+  var wrap=document.getElementById('cards');
+  MEMBERS.forEach(function(m){
+    var c=el('div','card');
+    c.setAttribute('tabindex','0');
+    c.setAttribute('role','button');
+    c.setAttribute('aria-expanded','false');
+    var chips=m.chips.map(function(s){return '<span class="stat-chip">'+s+'</span>';}).join('');
+    var dl='';
+    m.detail.forEach(function(row){
+      dl+='<dt>'+row[0]+'</dt>';
+      if(row[1]!=null)dl+='<dd>'+row[1]+'</dd>';
+      if(row[2]!=null)dl+='<dd class="q">“'+row[2]+'”</dd>';
+    });
+    c.innerHTML=
+      '<span class="caseno">档案编号 '+m.no+'</span>'+
+      '<div class="card-top"><div class="mug">'+m.name.charAt(0)+'</div>'+
+      '<div><h4>'+m.name+'</h4><div class="role">'+m.role+'</div></div></div>'+
+      '<p class="crime"><b>罪名：</b>'+m.crime+'</p>'+chips+
+      '<div class="card-more"><div class="inner"><dl>'+dl+'</dl></div></div>'+
+      '<div class="expand-hint">调阅完整案底 <span class="arr">▾</span></div>';
+    function toggle(){
+      var open=c.classList.toggle('open');
+      c.setAttribute('aria-expanded',open?'true':'false');
+      c.querySelector('.expand-hint').firstChild.textContent=open?'收起案底 ':'调阅完整案底 ';
+    }
+    c.addEventListener('click',toggle);
+    c.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+    wrap.appendChild(c);
+  });
+})();
+
+/* 撤回消息彩蛋 */
+(function(){
+  var toast=document.getElementById('toast');
+  var tries={};
+  var lines=[
+    '恢复失败。该物证已被当事人于案发现场销毁，技术手段无法复原。',
+    '再次恢复失败。系统提示：知道得越少，越安全。',
+    '你还在试？本卷宗对此表示钦佩，但答案只有当事人和微信服务器知道。'
+  ];
+  document.querySelectorAll('.dcard').forEach(function(d){
+    d.addEventListener('click',function(){
+      var k=d.dataset.who;
+      tries[k]=(tries[k]||0);
+      var msg='【'+d.dataset.who+' 于 '+d.dataset.time+' 撤回】'+lines[Math.min(tries[k],lines.length-1)];
+      tries[k]++;
+      d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');
+      toast.textContent=msg;
+      toast.classList.add('show');
+      clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove('show');},2800);
+    });
+  });
+})();
+
+/* 滚动浮现 + 印章 */
+(function(){
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.12});
+  document.querySelectorAll('.reveal,.sheet').forEach(function(s){io.observe(s);});
+  /* 封面章：载入后砸下 */
+  setTimeout(function(){document.getElementById('coverStamp').classList.add('landed');},500);
+})();
+</script>
+</body>
+</html>
